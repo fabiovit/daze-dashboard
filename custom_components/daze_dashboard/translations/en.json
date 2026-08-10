@@ -9,5 +9,19 @@
     "abort": {
       "already_configured": "DAZE Dashboard is already configured."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Dashboard preferences",
+        "description": "Customize DAZE Dashboard without YAML.",
+        "data": {
+          "show_chart": "Show live power chart",
+          "show_session_stats": "Show session statistics",
+          "show_diagnostics": "Show diagnostics view",
+          "theme": "Panel theme"
+        }
+      }
+    }
   }
 }

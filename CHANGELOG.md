@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.7.0
+
+### Live graph, session intelligence and UI configuration
+
+- Added a native SVG live power graph with a rolling five-minute window.
+- Added lightweight browser-side power samples every five seconds.
+- Added session statistics: energy, live elapsed time, live average power and estimated cost.
+- Estimated cost uses DAZE session energy multiplied by the available DAZE energy tariff.
+- Added visual temperature bars to smart diagnostics.
+- Added Home Assistant Options Flow: no YAML is required for dashboard preferences.
+- Users can enable/disable the chart, session statistics and diagnostics view.
+- Added Auto, Dark and Light panel theme preferences.
+- Added `single_config_entry` manifest support.
+- Dashboard options are delivered to the frontend through the existing privacy-safe WebSocket payload.
+- No additional DAZE cloud polling and no persistent history database are introduced.
+
 ## 0.6.0
 
 ### Live experience

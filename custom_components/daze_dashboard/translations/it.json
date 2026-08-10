@@ -9,5 +9,19 @@
     "abort": {
       "already_configured": "DAZE Dashboard è già configurato."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Preferenze plancia",
+        "description": "Personalizza DAZE Dashboard senza YAML.",
+        "data": {
+          "show_chart": "Mostra grafico potenza live",
+          "show_session_stats": "Mostra statistiche sessione",
+          "show_diagnostics": "Mostra vista diagnostica",
+          "theme": "Tema pannello"
+        }
+      }
+    }
   }
 }

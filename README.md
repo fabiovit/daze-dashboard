@@ -7,7 +7,7 @@ A modern sidebar dashboard for DAZE EV chargers in Home Assistant.
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.8%2B-41BDF5.svg)](https://www.home-assistant.io/)
 [![License](https://img.shields.io/github/license/fabiovit/daze-dashboard)](https://github.com/fabiovit/daze-dashboard/blob/main/LICENSE)
 
-> **Development status:** v0.6.0 — early development.
+> **Development status:** v0.7.0 — early development.
 
 DAZE Dashboard is an **independent companion project** for the excellent
 [`ha-daze`](https://github.com/rdndnl/ha-daze) Home Assistant integration.
@@ -140,6 +140,39 @@ DAZE Dashboard frontend
 Relevant wallbox state changes are pushed to the panel through a custom
 Home Assistant WebSocket subscription. No polling of the DAZE cloud is added by
 DAZE Dashboard.
+
+
+
+## ⚙️ UI configuration
+
+Starting with v0.7.0, the panel can be customized directly from Home Assistant:
+
+**Settings → Devices & services → DAZE Dashboard → Configure**
+
+Available options:
+
+- Show/hide the live power chart
+- Show/hide session statistics
+- Show/hide diagnostics
+- Theme: Auto / Dark / Light
+
+No YAML is required.
+
+## 📈 Live graph and session statistics
+
+The live graph keeps up to five minutes of power samples in the browser while
+the panel is open. This is intentionally lightweight and does not create a new
+database or poll the DAZE cloud.
+
+Session statistics include:
+
+- DAZE session energy
+- Live elapsed time
+- Average power of the samples collected while the panel is open
+- Estimated session cost from DAZE session energy × the available energy tariff
+
+The live timer and average are panel-session values and are not yet persistent
+across browser reloads.
 
 
 ## ✨ Current features

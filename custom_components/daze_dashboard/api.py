@@ -10,7 +10,37 @@ from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.event import async_track_state_change_event
 
+from .const import (
+    DEFAULT_SHOW_CHART,
+    DEFAULT_SHOW_DIAGNOSTICS,
+    DEFAULT_SHOW_SESSION_STATS,
+    DEFAULT_THEME,
+    DOMAIN,
+    OPTION_SHOW_CHART,
+    OPTION_SHOW_DIAGNOSTICS,
+    OPTION_SHOW_SESSION_STATS,
+    OPTION_THEME,
+)
 from .entity_map import DazeEntityMap, discover_daze_entities
+
+
+def _dashboard_options(hass: HomeAssistant) -> dict[str, Any]:
+    """Return UI options from the single DAZE Dashboard config entry."""
+    entries = hass.config_entries.async_entries(DOMAIN)
+    options = entries[0].options if entries else {}
+
+    return {
+        "show_chart": options.get(OPTION_SHOW_CHART, DEFAULT_SHOW_CHART),
+        "show_diagnostics": options.get(
+            OPTION_SHOW_DIAGNOSTICS,
+            DEFAULT_SHOW_DIAGNOSTICS,
+        ),
+        "show_session_stats": options.get(
+            OPTION_SHOW_SESSION_STATS,
+            DEFAULT_SHOW_SESSION_STATS,
+        ),
+        "theme": options.get(OPTION_THEME, DEFAULT_THEME),
+    }
 
 
 def _state_payload(hass: HomeAssistant, entity_map: DazeEntityMap) -> dict[str, Any]:
@@ -37,6 +67,7 @@ def _state_payload(hass: HomeAssistant, entity_map: DazeEntityMap) -> dict[str, 
         "available": bool(entity_map.entities),
         "integration": "ha-daze",
         "values": values,
+        "options": _dashboard_options(hass),
     }
 
 
