@@ -2,65 +2,156 @@
 
 A modern sidebar dashboard for DAZE EV chargers in Home Assistant.
 
-> **Status:** early development — v0.1.0
+[![GitHub release](https://img.shields.io/github/v/release/fabiovit/daze-dashboard)](https://github.com/fabiovit/daze-dashboard/releases)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom%20Repository-41BDF5.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=fabiovit&repository=daze-dashboard&category=integration)
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.8%2B-41BDF5.svg)](https://www.home-assistant.io/)
+[![License](https://img.shields.io/github/license/fabiovit/daze-dashboard)](https://github.com/fabiovit/daze-dashboard/blob/main/LICENSE)
 
-DAZE Dashboard is a separate Home Assistant custom integration. It does **not**
-modify `ha-daze`: it reads the entities already exposed in Home Assistant and
-renders them in a dedicated sidebar panel.
+> **Development status:** v0.2.0 — early development.
 
-## v0.1.0
+DAZE Dashboard is an **independent companion project** for the excellent
+[`ha-daze`](https://github.com/rdndnl/ha-daze) Home Assistant integration.
 
-The first technical release provides:
+It does **not** replace or modify `ha-daze`.  
+`ha-daze` communicates with DAZE and exposes the wallbox entities to Home Assistant;
+DAZE Dashboard reads those Home Assistant entities and presents them in a dedicated
+sidebar interface.
 
-- Home Assistant config flow (no YAML required)
-- automatic sidebar panel registration
-- live Home Assistant state updates
-- initial automatic discovery of common DAZE entity IDs
-- wallbox status
+## 🔗 Projects
+
+- **DAZE Dashboard:** https://github.com/fabiovit/daze-dashboard
+- **ha-daze:** https://github.com/rdndnl/ha-daze
+
+## 🧩 How it works
+
+```text
+DAZE wallbox
+     │
+     ▼
+   ha-daze
+     │
+     │ Home Assistant entities
+     ▼
+DAZE Dashboard
+```
+
+This separation means the two projects can be updated independently.
+
+## 📋 Requirements
+
+Before installing DAZE Dashboard, install and configure:
+
+### ha-daze
+
+https://github.com/rdndnl/ha-daze
+
+DAZE Dashboard currently relies on the entities exposed by `ha-daze`.
+
+## 📦 Install with HACS
+
+### One-click HACS link
+
+[![Open your Home Assistant instance and open this repository inside HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=fabiovit&repository=daze-dashboard&category=integration)
+
+If the button above does not work, add the repository manually.
+
+### Manual HACS custom repository
+
+1. Open **HACS** in Home Assistant.
+2. Open the menu in the top-right corner.
+3. Select **Custom repositories**.
+4. Add:
+
+```text
+https://github.com/fabiovit/daze-dashboard
+```
+
+5. Select repository type:
+
+```text
+Integration
+```
+
+6. Install **DAZE Dashboard**.
+7. Restart Home Assistant.
+8. Go to **Settings → Devices & services → Add integration**.
+9. Search for **DAZE Dashboard** and add it.
+10. The **DAZE** panel will appear in the Home Assistant sidebar.
+
+After a new release is published, HACS can detect the new version and offer the
+repository update.
+
+## 🛠️ Manual installation
+
+Copy:
+
+```text
+custom_components/daze_dashboard
+```
+
+to:
+
+```text
+/config/custom_components/daze_dashboard
+```
+
+Restart Home Assistant, then add **DAZE Dashboard** from:
+
+```text
+Settings → Devices & services → Add integration
+```
+
+## ✨ Current features
+
+- Home Assistant Config Flow — no YAML required
+- Automatic sidebar panel registration
+- Live Home Assistant state updates
+- Initial DAZE entity detection
+- Wallbox status
 - EVSE status
-- charging power
-- session energy
-- current and voltage
-- maximum charging current
-- case and board temperatures
-- fan status
-- responsive light/dark-theme-friendly layout
+- Charging power
+- Session energy
+- Current and voltage
+- Maximum charging current
+- Case and board temperatures
+- Fan status
+- Responsive interface
+- Home Assistant light/dark theme compatibility
 
-## Installation for development
+## 🔌 Relationship with ha-daze
 
-### Manual
+[`ha-daze`](https://github.com/rdndnl/ha-daze) remains responsible for communication with DAZE and for
+creating the Home Assistant entities used by this project.
 
-1. Copy `custom_components/daze_dashboard` to `/config/custom_components/`.
-2. Restart Home Assistant.
-3. Go to **Settings → Devices & services → Add integration**.
-4. Search for **DAZE Dashboard**.
-5. Add it.
-6. A new **DAZE** item will appear in the sidebar.
+DAZE Dashboard is only the presentation layer.
 
-### HACS custom repository
+DAZE Dashboard is **not affiliated with or endorsed by DAZE or the ha-daze project**.
+The reference to `ha-daze` is provided to document the required companion integration
+and to credit the work on which the dashboard's data source depends.
 
-Once this repository has been published on GitHub:
+## 🤝 Credits
 
-1. Open HACS.
-2. Open **Custom repositories**.
-3. Add the repository URL as type **Integration**.
-4. Install **DAZE Dashboard**.
-5. Restart Home Assistant.
-6. Add **DAZE Dashboard** from **Settings → Devices & services**.
+Special thanks to [`rdndnl/ha-daze`](https://github.com/rdndnl/ha-daze) for providing the Home Assistant
+integration that exposes DAZE wallbox data.
 
-## Relationship with ha-daze
+## 🗺️ Roadmap
 
-`ha-daze` remains responsible for communicating with DAZE and exposing entities.
-DAZE Dashboard is only the user interface layer.
+- **v0.3.0** — improved automatic entity/device discovery
+- **v0.4.0** — redesigned live charging overview
+- **v0.5.0** — optional vehicle and energy-flow data
+- **v1.0.0** — stable release
 
-## Roadmap
+## 🐛 Issues
 
-- v0.2.0: robust DAZE device/entity auto-discovery
-- v0.3.0: redesigned charging overview
-- v0.4.0: optional EV/BYD section
-- v0.5.0: PV/grid energy flow view
-- v1.0.0: stable HACS release
+Found a problem with DAZE Dashboard?
 
-## License
+https://github.com/fabiovit/daze-dashboard/issues
+
+For issues concerning communication with the DAZE wallbox itself or entities exposed
+by the underlying integration, refer to the `ha-daze` project:
+
+https://github.com/rdndnl/ha-daze/issues
+
+## 📄 License
 
 MIT
