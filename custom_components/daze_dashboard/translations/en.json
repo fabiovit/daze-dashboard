@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "DAZE Dashboard",
+        "description": "Add the DAZE Dashboard panel to the Home Assistant sidebar."
+      }
+    },
+    "abort": {
+      "already_configured": "DAZE Dashboard is already configured."
+    }
+  }
+}

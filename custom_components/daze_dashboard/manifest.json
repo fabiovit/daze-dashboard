@@ -1,0 +1,16 @@
+{
+  "domain": "daze_dashboard",
+  "name": "DAZE Dashboard",
+  "version": "0.1.0",
+  "documentation": "https://github.com/fabvittori/daze-dashboard",
+  "issue_tracker": "https://github.com/fabvittori/daze-dashboard/issues",
+  "codeowners": [
+    "@fabvittori"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "frontend",
+    "panel_custom"
+  ],
+  "iot_class": "calculated"
+}
