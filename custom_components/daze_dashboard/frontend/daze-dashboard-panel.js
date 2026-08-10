@@ -587,7 +587,7 @@ class DazeDashboardPanel extends HTMLElement {
               : this._renderOverview(evse,error,charging)
         ) : `<div class="notice">Nessuna entità compatibile con ha-daze è stata rilevata. Installa e configura prima l'integrazione ha-daze.</div>`}
 
-        <div class="footer"><span>DAZE Dashboard</span><span>·</span><span>v0.7.0</span><span>·</span><span>Powered by ha-daze</span></div>
+        <div class="footer"><span>DAZE Dashboard</span><span>·</span><span>v1.0.0</span><span>·</span><span>Stable</span><span>·</span><span>Powered by ha-daze</span></div>
       </main>
     `;
 

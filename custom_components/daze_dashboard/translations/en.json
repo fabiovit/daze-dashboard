@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "DAZE Dashboard",
-        "description": "Add the DAZE Dashboard panel to the Home Assistant sidebar."
+        "description": "Welcome to DAZE Dashboard.\\n\\nha-daze status: **{ha_daze_status}**\\n\\nDAZE entities detected: **{entity_count}**\\n\\nDAZE Dashboard is a companion interface and requires ha-daze."
       }
     },
     "abort": {

@@ -7,7 +7,7 @@ A modern sidebar dashboard for DAZE EV chargers in Home Assistant.
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.8%2B-41BDF5.svg)](https://www.home-assistant.io/)
 [![License](https://img.shields.io/github/license/fabiovit/daze-dashboard)](https://github.com/fabiovit/daze-dashboard/blob/main/LICENSE)
 
-> **Development status:** v0.7.0 — early development.
+> **Stable release:** v1.0.0
 
 DAZE Dashboard is an **independent companion project** for the excellent
 [`ha-daze`](https://github.com/rdndnl/ha-daze) Home Assistant integration.
@@ -142,6 +142,18 @@ Home Assistant WebSocket subscription. No polling of the DAZE cloud is added by
 DAZE Dashboard.
 
 
+
+## ✅ Stable 1.0
+
+DAZE Dashboard 1.0 is the first stable release.
+
+The stable baseline includes HACS installation, a Home Assistant setup wizard,
+single-config-entry protection, privacy-safe `ha-daze` entity discovery,
+backend WebSocket updates, the dedicated sidebar panel, five-minute live power
+graph, session statistics, smart diagnostics, UI options, responsive layouts,
+Italian/English setup translations and local Home Assistant brand assets.
+
+No YAML is required.
 
 ## ⚙️ UI configuration
 

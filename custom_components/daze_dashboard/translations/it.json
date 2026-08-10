@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "DAZE Dashboard",
-        "description": "Aggiungi il pannello DAZE Dashboard alla barra laterale di Home Assistant."
+        "description": "Benvenuto in DAZE Dashboard.\\n\\nStato ha-daze: **{ha_daze_status}**\\n\\nEntità DAZE rilevate: **{entity_count}**\\n\\nDAZE Dashboard è un'interfaccia complementare e richiede ha-daze."
       }
     },
     "abort": {

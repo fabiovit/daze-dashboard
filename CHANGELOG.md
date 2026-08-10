@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.0 — First Stable Release
+
+- First stable DAZE Dashboard release.
+- Added setup wizard with ha-daze detection and DAZE entity count.
+- Added single-config-entry protection.
+- Updated options handling to Home Assistant `OptionsFlowWithReload`.
+- Added local integration icon and logo.
+- Added FAQ documentation.
+- Preserved privacy-safe entity-registry discovery and WebSocket architecture.
+- Preserved live graph, session statistics, diagnostics and UI themes.
+- No personal entity IDs, SSID values or wallbox serials are hardcoded or displayed.
+
 ## 0.7.0
 
 ### Live graph, session intelligence and UI configuration
