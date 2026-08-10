@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.0
+
+### DAZE entity coverage
+
+- Added all currently available `ha-daze` entities from the reference installation.
+- Added energy tariff, grid current, Wi-Fi SSID, firmware and software information.
+- Added system error status.
+- Added raw wallbox power alongside the converted kW value.
+- Added charging current, maximum current, voltage and session energy.
+- Added case and board temperatures.
+- Added fan state.
+- Redesigned the main panel into charging, diagnostics and information sections.
+- Kept optional Home Assistant charging helper support.
+- Updated frontend version to 0.3.0.
+
 ## 0.2.1
 
 ### Hotfix
