@@ -7,7 +7,7 @@ A modern sidebar dashboard for DAZE EV chargers in Home Assistant.
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.8%2B-41BDF5.svg)](https://www.home-assistant.io/)
 [![License](https://img.shields.io/github/license/fabiovit/daze-dashboard)](https://github.com/fabiovit/daze-dashboard/blob/main/LICENSE)
 
-> **Development status:** v0.2.0 — early development.
+> **Development status:** v0.2.1 — early development.
 
 DAZE Dashboard is an **independent companion project** for the excellent
 [`ha-daze`](https://github.com/rdndnl/ha-daze) Home Assistant integration.

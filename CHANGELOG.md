@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1
+
+### Hotfix
+
+- Fixed Home Assistant startup failure in `async_register_panel()`.
+- Removed unsupported `handle_safe_area` argument for compatibility with current Home Assistant panel registration API.
+- Bumped frontend cache/version marker to 0.2.1.
+
 ## 0.2.0
 
 ### Documentation and distribution

@@ -354,7 +354,7 @@ class DazeDashboardPanel extends HTMLElement {
         </section>
 
         <div class="note">
-          v0.2.0 · Documentazione, HACS e riferimenti al progetto aggiornati. Il pannello legge gli stati già presenti in Home Assistant e non modifica ha-daze.
+          v0.2.1 · Documentazione, HACS e riferimenti al progetto aggiornati. Il pannello legge gli stati già presenti in Home Assistant e non modifica ha-daze.
         </div>
       </main>
     `;
