@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.6.0
+
+### Live experience
+
+- Added three panel views: Panoramica, Diagnostica and Informazioni.
+- Redesigned the hero with a larger live power display and explicit `kW` unit.
+- Added dynamic accent colors based on charging/connected/idle/error state.
+- Added a subtle charging pulse animation.
+- Added session energy directly to the hero.
+- Added a live elapsed timer while charging and while the panel remains open.
+- Added smart temperature diagnostics with OK / Elevated / Critical states.
+- Added compact system, fan and Wi-Fi diagnostics.
+- Added a more useful overview hierarchy with a larger session-energy card.
+- Preserved backend WebSocket architecture and privacy-safe entity discovery.
+- No personal entity IDs, SSID values or wallbox serials are displayed.
+
 ## 0.5.0
 
 ### Backend discovery and live WebSocket data
