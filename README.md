@@ -7,7 +7,7 @@ A modern sidebar dashboard for DAZE EV chargers in Home Assistant.
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.8%2B-41BDF5.svg)](https://www.home-assistant.io/)
 [![License](https://img.shields.io/github/license/fabiovit/daze-dashboard)](https://github.com/fabiovit/daze-dashboard/blob/main/LICENSE)
 
-> **Development status:** v0.4.0 — early development.
+> **Development status:** v0.5.0 — early development.
 
 DAZE Dashboard is an **independent companion project** for the excellent
 [`ha-daze`](https://github.com/rdndnl/ha-daze) Home Assistant integration.
@@ -111,6 +111,35 @@ and the common charger entity prefix exposed by `ha-daze`.
 
 Names of homes, rooms, wallboxes, serial numbers, vehicles, people and custom
 helpers are not hardcoded in the public project.
+
+
+
+## 🧠 Backend architecture
+
+Starting with v0.5.0, DAZE Dashboard discovers `ha-daze` entities in the Python
+backend using Home Assistant's entity registry and the stable `unique_id` keys
+defined by `ha-daze`.
+
+The frontend no longer performs entity-name or entity-id discovery.
+
+```text
+ha-daze entities
+      │
+      ▼
+DAZE Dashboard backend
+(entity registry discovery)
+      │
+      ▼
+WebSocket subscription
+      │
+      ▼
+DAZE Dashboard frontend
+(logical values only)
+```
+
+Relevant wallbox state changes are pushed to the panel through a custom
+Home Assistant WebSocket subscription. No polling of the DAZE cloud is added by
+DAZE Dashboard.
 
 
 ## ✨ Current features

@@ -3,16 +3,19 @@ class DazeDashboardPanel extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
     this._hass = undefined;
+    this._data = undefined;
+    this._unsubscribe = undefined;
+    this._connecting = false;
   }
 
   set hass(hass) {
     this._hass = hass;
+    this._ensureSubscription();
     this._render();
   }
 
   set panel(panel) {
     this._panel = panel;
-    this._render();
   }
 
   set narrow(narrow) {
@@ -23,12 +26,44 @@ class DazeDashboardPanel extends HTMLElement {
     this._route = route;
   }
 
-  _entity(entityId) {
-    return entityId ? this._hass?.states?.[entityId] : undefined;
+  disconnectedCallback() {
+    if (this._unsubscribe) {
+      this._unsubscribe();
+      this._unsubscribe = undefined;
+    }
   }
 
-  _state(entityId, fallback = "—") {
-    const value = this._entity(entityId)?.state;
+  async _ensureSubscription() {
+    if (!this._hass || this._unsubscribe || this._connecting) return;
+
+    this._connecting = true;
+
+    try {
+      this._unsubscribe = await this._hass.connection.subscribeMessage(
+        (event) => {
+          this._data = event;
+          this._render();
+        },
+        { type: "daze_dashboard/subscribe" }
+      );
+    } catch (err) {
+      console.error("DAZE Dashboard subscription failed", err);
+      this._data = { available: false, error: String(err), values: {} };
+      this._render();
+    } finally {
+      this._connecting = false;
+    }
+  }
+
+  _item(key) {
+    return this._data?.values?.[key];
+  }
+
+  _state(key, fallback = "—") {
+    const item = this._item(key);
+    if (!item || item.available === false) return fallback;
+
+    const value = item.state;
     if (
       value === undefined ||
       value === null ||
@@ -36,11 +71,12 @@ class DazeDashboardPanel extends HTMLElement {
     ) {
       return fallback;
     }
+
     return value;
   }
 
-  _number(entityId, decimals = 1, suffix = "") {
-    const raw = this._state(entityId, null);
+  _number(key, decimals = 1, suffix = "") {
+    const raw = this._state(key, null);
     if (raw === null) return "—";
 
     const n = Number(raw);
@@ -52,124 +88,14 @@ class DazeDashboardPanel extends HTMLElement {
     })}${suffix}`;
   }
 
-  _allSensorIds() {
-    return Object.keys(this._hass?.states || {}).filter((id) => id.startsWith("sensor."));
-  }
-
-  _findFirstBySuffix(...suffixes) {
-    const ids = this._allSensorIds();
-    for (const suffix of suffixes) {
-      const match = ids.find((id) => id.endsWith(suffix));
-      if (match) return match;
-    }
-    return undefined;
-  }
-
-  _findChargerPrefix() {
-    const evse = this._findFirstBySuffix(
-      "_codice_stato_evse",
-      "_stato_evse",
-      "_evse_state"
-    );
-
-    if (!evse) return undefined;
-
-    for (const suffix of ["_codice_stato_evse", "_stato_evse", "_evse_state"]) {
-      if (evse.endsWith(suffix)) {
-        return evse.slice(0, -suffix.length);
-      }
-    }
-
-    return undefined;
-  }
-
-  _withPrefix(prefix, ...suffixes) {
-    if (!prefix) return undefined;
-
-    for (const suffix of suffixes) {
-      const id = `${prefix}${suffix}`;
-      if (this._hass?.states?.[id]) return id;
-    }
-
-    return undefined;
-  }
-
-  _discover() {
-    const prefix = this._findChargerPrefix();
-
-    return {
-      prefix,
-
-      status:
-        this._withPrefix(prefix, "_codice_stato", "_stato", "_status") ||
-        this._findFirstBySuffix("_codice_stato", "_stato"),
-
-      evse:
-        this._withPrefix(prefix, "_codice_stato_evse", "_stato_evse", "_evse_state") ||
-        this._findFirstBySuffix("_codice_stato_evse", "_stato_evse", "_evse_state"),
-
-      sessionEnergy:
-        this._withPrefix(prefix, "_energia_sessione", "_session_energy") ||
-        this._findFirstBySuffix("_energia_sessione", "_session_energy"),
-
-      rawPower:
-        this._withPrefix(prefix, "_potenza", "_power") ||
-        this._findFirstBySuffix("_potenza", "_power"),
-
-      current:
-        this._withPrefix(prefix, "_corrente_di_carica_l1", "_charging_current_l1") ||
-        this._findFirstBySuffix("_corrente_di_carica_l1", "_charging_current_l1"),
-
-      voltage:
-        this._withPrefix(prefix, "_tensione_l1", "_voltage_l1") ||
-        this._findFirstBySuffix("_tensione_l1", "_voltage_l1"),
-
-      maxCurrent:
-        this._withPrefix(prefix, "_corrente_di_carica_massima", "_maximum_charging_current") ||
-        this._findFirstBySuffix("_corrente_di_carica_massima", "_maximum_charging_current"),
-
-      fan:
-        this._withPrefix(prefix, "_stato_ventola", "_fan_state") ||
-        this._findFirstBySuffix("_stato_ventola", "_fan_state"),
-
-      caseTemp:
-        this._withPrefix(prefix, "_temperatura_case", "_case_temperature") ||
-        this._findFirstBySuffix("_temperatura_case", "_case_temperature"),
-
-      boardTemp:
-        this._withPrefix(prefix, "_temperatura_scheda", "_board_temperature") ||
-        this._findFirstBySuffix("_temperatura_scheda", "_board_temperature"),
-
-      systemError:
-        this._withPrefix(prefix, "_errore_di_sistema", "_system_error") ||
-        this._findFirstBySuffix("_errore_di_sistema", "_system_error"),
-
-      gridCurrent:
-        this._findFirstBySuffix("_corrente_di_rete_l1", "_grid_current_l1"),
-
-      wifi:
-        this._findFirstBySuffix("_ssid_wi_fi", "_wifi_ssid", "_ssid_wifi"),
-
-      firmware:
-        this._findFirstBySuffix("_versione_firmware", "_firmware_version"),
-
-      software:
-        this._findFirstBySuffix("_versione_software", "_software_version"),
-
-      tariff:
-        this._findFirstBySuffix("_tariffa_energetica", "_energy_tariff"),
-    };
-  }
-
-  _rawPowerWatts(e) {
-    const raw = this._state(e.rawPower, null);
-    if (raw === null) return NaN;
+  _watts() {
+    const raw = this._state("power", null);
     const n = Number(raw);
     return Number.isFinite(n) ? n : NaN;
   }
 
-  _power(e) {
-    const watts = this._rawPowerWatts(e);
+  _power() {
+    const watts = this._watts();
     if (!Number.isFinite(watts)) return "—";
 
     return `${(watts / 1000).toLocaleString("it-IT", {
@@ -178,8 +104,8 @@ class DazeDashboardPanel extends HTMLElement {
     })} kW`;
   }
 
-  _isCharging(e) {
-    const watts = this._rawPowerWatts(e);
+  _isCharging() {
+    const watts = this._watts();
     return Number.isFinite(watts) && watts > 300;
   }
 
@@ -198,29 +124,60 @@ class DazeDashboardPanel extends HTMLElement {
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
 
-  _statusTone(e) {
-    if (this._isCharging(e)) return "charging";
+  _statusTone() {
+    if (this._isCharging()) return "charging";
 
-    const evse = this._state(e.evse, "").toLowerCase();
+    const evse = String(this._state("evse_state", "")).toLowerCase();
     if (!evse) return "offline";
-    if (evse.includes("attesa") || evse.includes("standby") || evse.includes("idle")) return "idle";
-    if (evse.includes("error") || evse.includes("fault")) return "offline";
+    if (evse.includes("standby") || evse.includes("idle") || evse.includes("attesa")) return "idle";
+    if (evse.includes("fault") || evse.includes("error")) return "offline";
     return "connected";
   }
 
-  _errorInfo(e) {
-    const raw = this._state(e.systemError, "—");
+  _errorInfo() {
+    const raw = this._state("system_error", "—");
     const l = String(raw).toLowerCase();
 
     if (raw === "—") return { text: "Non disponibile", tone: "neutral" };
-    if (l.includes("nessun") || l.includes("no error") || l === "ok") {
+    if (l.includes("none") || l.includes("nessun") || l.includes("no error") || l === "ok") {
       return { text: "Nessun errore", tone: "ok" };
     }
+
     return { text: raw, tone: "bad" };
   }
 
-  _wifiText(e) {
-    return this._entity(e.wifi) ? "Connesso" : "Non disponibile";
+  _wifiText() {
+    const raw = this._state("wifi_ssid", null);
+    return raw === null ? "Non disponibile" : "Connesso";
+  }
+
+  _tariff() {
+    const item = this._item("tariff");
+    if (!item || item.available === false) return "—";
+
+    const n = Number(item.state);
+    if (!Number.isFinite(n)) return item.state ?? "—";
+
+    const symbol = item.currency_symbol || item.currency_code || "";
+    return `${n.toLocaleString("it-IT", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 4,
+    })}${symbol ? ` ${symbol}` : ""}`;
+  }
+
+  _powerPercent() {
+    const watts = this._watts();
+    const current = Number(this._state("max_charging_current", "NaN"));
+    const voltage = Number(this._state("voltage_l1", "NaN"));
+
+    if (!Number.isFinite(watts) || !Number.isFinite(current) || !Number.isFinite(voltage)) {
+      return 0;
+    }
+
+    const maxWatts = current * voltage;
+    if (maxWatts <= 0) return 0;
+
+    return Math.max(0, Math.min(100, (watts / maxWatts) * 100));
   }
 
   _metric(icon, label, value, extraClass = "") {
@@ -235,37 +192,27 @@ class DazeDashboardPanel extends HTMLElement {
     `;
   }
 
-  _powerPercent(e) {
-    const watts = this._rawPowerWatts(e);
-    const current = Number(this._state(e.maxCurrent, "NaN"));
-    const voltage = Number(this._state(e.voltage, "NaN"));
-
-    if (!Number.isFinite(watts) || !Number.isFinite(current) || !Number.isFinite(voltage)) {
-      return 0;
-    }
-
-    const maxWatts = current * voltage;
-    if (maxWatts <= 0) return 0;
-
-    return Math.max(0, Math.min(100, (watts / maxWatts) * 100));
-  }
-
   _render() {
     if (!this.shadowRoot) return;
 
-    if (!this._hass) {
-      this.shadowRoot.innerHTML = `<div style="padding:24px">Caricamento DAZE Dashboard…</div>`;
+    if (!this._data) {
+      this.shadowRoot.innerHTML = `
+        <style>
+          :host{display:block;min-height:100%;background:var(--primary-background-color);color:var(--primary-text-color)}
+          .loading{padding:40px;font:600 16px system-ui;opacity:.7}
+        </style>
+        <div class="loading">Connessione a DAZE Dashboard…</div>
+      `;
       return;
     }
 
-    const e = this._discover();
-    const charging = this._isCharging(e);
-    const status = this._humanStatus(this._state(e.status, "—"));
-    const evse = this._humanStatus(this._state(e.evse, "—"));
-    const tone = this._statusTone(e);
-    const error = this._errorInfo(e);
+    const charging = this._isCharging();
+    const status = this._humanStatus(this._state("status"));
+    const evse = this._humanStatus(this._state("evse_state"));
+    const tone = this._statusTone();
+    const error = this._errorInfo();
     const heroLabel = charging ? "IN CARICA" : evse.toUpperCase();
-    const powerPercent = this._powerPercent(e);
+    const powerPercent = this._powerPercent();
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -453,6 +400,14 @@ class DazeDashboardPanel extends HTMLElement {
         .metric.bad .metric-icon { color: #ef5350; }
         .metric.neutral .metric-icon { color: #8b8b8b; }
 
+        .notice {
+          margin-top: 18px;
+          border-radius: 18px;
+          padding: 16px 18px;
+          background: var(--secondary-background-color);
+          opacity: .8;
+        }
+
         .footer {
           display: flex;
           justify-content: center;
@@ -494,7 +449,7 @@ class DazeDashboardPanel extends HTMLElement {
             </div>
 
             <div class="power-block">
-              <div class="power">${this._power(e)}</div>
+              <div class="power">${this._power()}</div>
               <div class="power-sub">${charging ? "Potenza di ricarica" : "Potenza wallbox"}</div>
               <div class="power-track">
                 <div class="power-fill"></div>
@@ -503,53 +458,59 @@ class DazeDashboardPanel extends HTMLElement {
           </div>
         </section>
 
-        <section class="section">
-          <div class="section-title">
-            <ha-icon icon="mdi:ev-station"></ha-icon>
-            Ricarica
-          </div>
-          <div class="metrics">
-            ${this._metric("mdi:ev-plug-type2", "Stato EVSE", evse)}
-            ${this._metric("mdi:lightning-bolt-circle", "Energia sessione", this._number(e.sessionEnergy, 2, " kWh"))}
-            ${this._metric("mdi:current-ac", "Corrente L1", this._number(e.current, 1, " A"))}
-            ${this._metric("mdi:sine-wave", "Tensione L1", this._number(e.voltage, 0, " V"))}
-            ${this._metric("mdi:flash", "Potenza", this._number(e.rawPower, 0, " W"))}
-            ${this._metric("mdi:current-ac", "Corrente massima", this._number(e.maxCurrent, 1, " A"))}
-            ${this._metric("mdi:transmission-tower", "Corrente rete L1", this._number(e.gridCurrent, 1, " A"))}
-            ${this._metric("mdi:alert-circle-outline", "Errore sistema", error.text, error.tone)}
-          </div>
-        </section>
+        ${this._data.available ? `
+          <section class="section">
+            <div class="section-title">
+              <ha-icon icon="mdi:ev-station"></ha-icon>
+              Ricarica
+            </div>
+            <div class="metrics">
+              ${this._metric("mdi:ev-plug-type2", "Stato EVSE", evse)}
+              ${this._metric("mdi:lightning-bolt-circle", "Energia sessione", this._number("session_energy", 2, " kWh"))}
+              ${this._metric("mdi:current-ac", "Corrente L1", this._number("charging_current_l1", 1, " A"))}
+              ${this._metric("mdi:sine-wave", "Tensione L1", this._number("voltage_l1", 0, " V"))}
+              ${this._metric("mdi:flash", "Potenza", this._number("power", 0, " W"))}
+              ${this._metric("mdi:current-ac", "Corrente massima", this._number("max_charging_current", 1, " A"))}
+              ${this._metric("mdi:transmission-tower", "Corrente rete L1", this._number("grid_current_l1", 1, " A"))}
+              ${this._metric("mdi:alert-circle-outline", "Errore sistema", error.text, error.tone)}
+            </div>
+          </section>
 
-        <section class="section">
-          <div class="section-title">
-            <ha-icon icon="mdi:thermometer-lines"></ha-icon>
-            Diagnostica
-          </div>
-          <div class="metrics">
-            ${this._metric("mdi:thermometer", "Case", this._number(e.caseTemp, 1, " °C"))}
-            ${this._metric("mdi:thermometer-lines", "Scheda", this._number(e.boardTemp, 1, " °C"))}
-            ${this._metric("mdi:fan", "Ventola", this._humanStatus(this._state(e.fan)))}
-            ${this._metric("mdi:wifi", "Wi-Fi", this._wifiText(e))}
-          </div>
-        </section>
+          <section class="section">
+            <div class="section-title">
+              <ha-icon icon="mdi:thermometer-lines"></ha-icon>
+              Diagnostica
+            </div>
+            <div class="metrics">
+              ${this._metric("mdi:thermometer", "Case", this._number("case_temperature", 1, " °C"))}
+              ${this._metric("mdi:thermometer-lines", "Scheda", this._number("board_temperature", 1, " °C"))}
+              ${this._metric("mdi:fan", "Ventola", this._humanStatus(this._state("fan_status")))}
+              ${this._metric("mdi:wifi", "Wi-Fi", this._wifiText())}
+            </div>
+          </section>
 
-        <section class="section">
-          <div class="section-title">
-            <ha-icon icon="mdi:information-outline"></ha-icon>
-            Informazioni DAZE
+          <section class="section">
+            <div class="section-title">
+              <ha-icon icon="mdi:information-outline"></ha-icon>
+              Informazioni DAZE
+            </div>
+            <div class="metrics">
+              ${this._metric("mdi:cash", "Tariffa energetica", this._tariff())}
+              ${this._metric("mdi:chip", "Firmware", this._state("firmware_version"))}
+              ${this._metric("mdi:application-cog-outline", "Software", this._state("software_version"))}
+              ${this._metric("mdi:shield-check-outline", "Integrazione", "ha-daze")}
+            </div>
+          </section>
+        ` : `
+          <div class="notice">
+            Nessuna entità compatibile con ha-daze è stata rilevata. Installa e configura prima l'integrazione ha-daze.
           </div>
-          <div class="metrics">
-            ${this._metric("mdi:cash", "Tariffa energetica", this._state(e.tariff))}
-            ${this._metric("mdi:chip", "Firmware", this._state(e.firmware))}
-            ${this._metric("mdi:application-cog-outline", "Software", this._state(e.software))}
-            ${this._metric("mdi:shield-check-outline", "Integrazione", "ha-daze")}
-          </div>
-        </section>
+        `}
 
         <div class="footer">
           <span>DAZE Dashboard</span>
           <span>·</span>
-          <span>v0.4.0</span>
+          <span>v0.5.0</span>
           <span>·</span>
           <span>Powered by ha-daze</span>
         </div>

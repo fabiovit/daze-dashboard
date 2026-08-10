@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.5.0
+
+### Backend discovery and live WebSocket data
+
+- Moved DAZE entity discovery from the JavaScript frontend to the Python backend.
+- Discovery now uses Home Assistant's entity registry and `ha-daze` platform metadata.
+- Logical fields are identified through stable `ha-daze` entity `unique_id` keys.
+- Added `entity_map.py` for backend entity discovery.
+- Added `api.py` with a dedicated `daze_dashboard/subscribe` WebSocket command.
+- Relevant DAZE state changes are pushed live to the panel.
+- The frontend now renders logical DAZE values and no longer searches Home Assistant entity IDs.
+- No additional DAZE cloud polling is introduced.
+- Preserved privacy-safe UI behavior: no SSID, serial, room/home name or personal entity ID is displayed.
+
 ## 0.4.0
 
 ### Live dashboard refinement
