@@ -74,13 +74,7 @@ class DazeDashboardPanel extends HTMLElement {
 
     if (!evse) return undefined;
 
-    const suffixes = [
-      "_codice_stato_evse",
-      "_stato_evse",
-      "_evse_state"
-    ];
-
-    for (const suffix of suffixes) {
+    for (const suffix of ["_codice_stato_evse", "_stato_evse", "_evse_state"]) {
       if (evse.endsWith(suffix)) {
         return evse.slice(0, -suffix.length);
       }
@@ -167,15 +161,15 @@ class DazeDashboardPanel extends HTMLElement {
     };
   }
 
-  _rawPowerWatts(entities) {
-    const raw = this._state(entities.rawPower, null);
+  _rawPowerWatts(e) {
+    const raw = this._state(e.rawPower, null);
     if (raw === null) return NaN;
     const n = Number(raw);
     return Number.isFinite(n) ? n : NaN;
   }
 
-  _power(entities) {
-    const watts = this._rawPowerWatts(entities);
+  _power(e) {
+    const watts = this._rawPowerWatts(e);
     if (!Number.isFinite(watts)) return "—";
 
     return `${(watts / 1000).toLocaleString("it-IT", {
@@ -184,25 +178,49 @@ class DazeDashboardPanel extends HTMLElement {
     })} kW`;
   }
 
-  _isCharging(entities) {
-    const watts = this._rawPowerWatts(entities);
+  _isCharging(e) {
+    const watts = this._rawPowerWatts(e);
     return Number.isFinite(watts) && watts > 300;
   }
 
-  _statusTone(entities) {
-    if (this._isCharging(entities)) return "charging";
+  _humanStatus(value) {
+    if (!value || value === "—") return "Non disponibile";
 
-    const evse = this._state(entities.evse, "").toLowerCase();
+    const s = String(value).trim();
+    const l = s.toLowerCase();
+
+    if (["standby", "idle", "waiting", "in attesa"].includes(l)) return "In attesa";
+    if (l.includes("charg")) return "In carica";
+    if (l.includes("connected") || l.includes("colleg")) return "Auto collegata";
+    if (l.includes("complete") || l.includes("terminat") || l.includes("finished")) return "Carica completata";
+    if (l.includes("fault") || l.includes("error") || l.includes("errore")) return "Errore";
+
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  _statusTone(e) {
+    if (this._isCharging(e)) return "charging";
+
+    const evse = this._state(e.evse, "").toLowerCase();
     if (!evse) return "offline";
-    if (evse.includes("attesa") || evse.includes("standby")) return "idle";
+    if (evse.includes("attesa") || evse.includes("standby") || evse.includes("idle")) return "idle";
+    if (evse.includes("error") || evse.includes("fault")) return "offline";
     return "connected";
   }
 
-  _errorTone(entities) {
-    const err = this._state(entities.systemError, "").toLowerCase();
-    if (!err) return "neutral";
-    if (err.includes("nessun") || err.includes("no error")) return "ok";
-    return "bad";
+  _errorInfo(e) {
+    const raw = this._state(e.systemError, "—");
+    const l = String(raw).toLowerCase();
+
+    if (raw === "—") return { text: "Non disponibile", tone: "neutral" };
+    if (l.includes("nessun") || l.includes("no error") || l === "ok") {
+      return { text: "Nessun errore", tone: "ok" };
+    }
+    return { text: raw, tone: "bad" };
+  }
+
+  _wifiText(e) {
+    return this._entity(e.wifi) ? "Connesso" : "Non disponibile";
   }
 
   _metric(icon, label, value, extraClass = "") {
@@ -217,23 +235,37 @@ class DazeDashboardPanel extends HTMLElement {
     `;
   }
 
+  _powerPercent(e) {
+    const watts = this._rawPowerWatts(e);
+    const current = Number(this._state(e.maxCurrent, "NaN"));
+    const voltage = Number(this._state(e.voltage, "NaN"));
+
+    if (!Number.isFinite(watts) || !Number.isFinite(current) || !Number.isFinite(voltage)) {
+      return 0;
+    }
+
+    const maxWatts = current * voltage;
+    if (maxWatts <= 0) return 0;
+
+    return Math.max(0, Math.min(100, (watts / maxWatts) * 100));
+  }
+
   _render() {
     if (!this.shadowRoot) return;
 
     if (!this._hass) {
-      this.shadowRoot.innerHTML = `<div style="padding:24px">Loading DAZE Dashboard…</div>`;
+      this.shadowRoot.innerHTML = `<div style="padding:24px">Caricamento DAZE Dashboard…</div>`;
       return;
     }
 
     const e = this._discover();
     const charging = this._isCharging(e);
-    const status = this._state(e.status, "Status unavailable");
-    const evse = this._state(e.evse, "EVSE status unavailable");
+    const status = this._humanStatus(this._state(e.status, "—"));
+    const evse = this._humanStatus(this._state(e.evse, "—"));
     const tone = this._statusTone(e);
-    const errorTone = this._errorTone(e);
-    const error = this._state(e.systemError, "—");
-
-    const heroLabel = charging ? "IN CARICA" : String(evse).toUpperCase();
+    const error = this._errorInfo(e);
+    const heroLabel = charging ? "IN CARICA" : evse.toUpperCase();
+    const powerPercent = this._powerPercent(e);
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -255,11 +287,11 @@ class DazeDashboardPanel extends HTMLElement {
 
         .hero {
           border-radius: 30px;
-          padding: 32px;
+          padding: 34px;
           border: 1px solid var(--divider-color);
           background:
-            radial-gradient(circle at 82% 12%, rgba(56,189,248,.23), transparent 35%),
-            radial-gradient(circle at 10% 110%, rgba(99,102,241,.13), transparent 38%),
+            radial-gradient(circle at 82% 12%, rgba(56,189,248,.25), transparent 36%),
+            radial-gradient(circle at 10% 110%, rgba(99,102,241,.14), transparent 40%),
             var(--card-background-color);
           box-shadow: var(--ha-card-box-shadow, 0 10px 36px rgba(0,0,0,.08));
           overflow: hidden;
@@ -269,7 +301,7 @@ class DazeDashboardPanel extends HTMLElement {
           display: grid;
           grid-template-columns: 1fr auto;
           align-items: center;
-          gap: 24px;
+          gap: 30px;
         }
 
         .kicker {
@@ -277,21 +309,21 @@ class DazeDashboardPanel extends HTMLElement {
           font-weight: 850;
           letter-spacing: .18em;
           opacity: .55;
-          margin-bottom: 8px;
+          margin-bottom: 10px;
         }
 
         h1 {
           margin: 0;
-          font-size: clamp(40px, 7vw, 68px);
-          letter-spacing: -.055em;
-          line-height: .95;
+          font-size: clamp(42px, 7vw, 72px);
+          letter-spacing: -.06em;
+          line-height: .92;
         }
 
         .status-pill {
           display: inline-flex;
           align-items: center;
           gap: 9px;
-          margin-top: 16px;
+          margin-top: 17px;
           padding: 9px 14px;
           border-radius: 999px;
           background: var(--secondary-background-color);
@@ -320,19 +352,38 @@ class DazeDashboardPanel extends HTMLElement {
 
         .power-block {
           text-align: right;
+          min-width: 320px;
         }
 
         .power {
-          font-size: clamp(42px, 8vw, 74px);
-          line-height: .9;
+          font-size: clamp(52px, 9vw, 90px);
+          line-height: .86;
           font-weight: 950;
-          letter-spacing: -.065em;
+          letter-spacing: -.07em;
         }
 
         .power-sub {
-          margin-top: 10px;
+          margin-top: 12px;
           opacity: .58;
           font-weight: 700;
+        }
+
+        .power-track {
+          width: 100%;
+          height: 7px;
+          margin-top: 18px;
+          border-radius: 999px;
+          overflow: hidden;
+          background: var(--secondary-background-color);
+        }
+
+        .power-fill {
+          height: 100%;
+          width: ${powerPercent}%;
+          min-width: ${charging ? "4%" : "0"};
+          border-radius: inherit;
+          background: linear-gradient(90deg, #38bdf8, #22c55e);
+          transition: width .45s ease;
         }
 
         .section {
@@ -403,7 +454,10 @@ class DazeDashboardPanel extends HTMLElement {
         .metric.neutral .metric-icon { color: #8b8b8b; }
 
         .footer {
-          text-align: center;
+          display: flex;
+          justify-content: center;
+          gap: 8px;
+          align-items: center;
           font-size: 12px;
           opacity: .5;
           margin: 18px 0 6px;
@@ -413,9 +467,9 @@ class DazeDashboardPanel extends HTMLElement {
           .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
 
-        @media (max-width: 720px) {
+        @media (max-width: 760px) {
           .hero-grid { grid-template-columns: 1fr; }
-          .power-block { text-align: left; }
+          .power-block { text-align: left; min-width: 0; }
         }
 
         @media (max-width: 540px) {
@@ -442,6 +496,9 @@ class DazeDashboardPanel extends HTMLElement {
             <div class="power-block">
               <div class="power">${this._power(e)}</div>
               <div class="power-sub">${charging ? "Potenza di ricarica" : "Potenza wallbox"}</div>
+              <div class="power-track">
+                <div class="power-fill"></div>
+              </div>
             </div>
           </div>
         </section>
@@ -456,23 +513,23 @@ class DazeDashboardPanel extends HTMLElement {
             ${this._metric("mdi:lightning-bolt-circle", "Energia sessione", this._number(e.sessionEnergy, 2, " kWh"))}
             ${this._metric("mdi:current-ac", "Corrente L1", this._number(e.current, 1, " A"))}
             ${this._metric("mdi:sine-wave", "Tensione L1", this._number(e.voltage, 0, " V"))}
-            ${this._metric("mdi:flash", "Potenza grezza", this._number(e.rawPower, 0, " W"))}
+            ${this._metric("mdi:flash", "Potenza", this._number(e.rawPower, 0, " W"))}
             ${this._metric("mdi:current-ac", "Corrente massima", this._number(e.maxCurrent, 1, " A"))}
             ${this._metric("mdi:transmission-tower", "Corrente rete L1", this._number(e.gridCurrent, 1, " A"))}
-            ${this._metric("mdi:alert-circle-outline", "Errore sistema", error, errorTone)}
+            ${this._metric("mdi:alert-circle-outline", "Errore sistema", error.text, error.tone)}
           </div>
         </section>
 
         <section class="section">
           <div class="section-title">
             <ha-icon icon="mdi:thermometer-lines"></ha-icon>
-            Diagnostica wallbox
+            Diagnostica
           </div>
           <div class="metrics">
-            ${this._metric("mdi:thermometer", "Temperatura case", this._number(e.caseTemp, 1, " °C"))}
-            ${this._metric("mdi:thermometer-lines", "Temperatura scheda", this._number(e.boardTemp, 1, " °C"))}
-            ${this._metric("mdi:fan", "Stato ventola", this._state(e.fan))}
-            ${this._metric("mdi:wifi", "SSID Wi-Fi", this._state(e.wifi))}
+            ${this._metric("mdi:thermometer", "Case", this._number(e.caseTemp, 1, " °C"))}
+            ${this._metric("mdi:thermometer-lines", "Scheda", this._number(e.boardTemp, 1, " °C"))}
+            ${this._metric("mdi:fan", "Ventola", this._humanStatus(this._state(e.fan)))}
+            ${this._metric("mdi:wifi", "Wi-Fi", this._wifiText(e))}
           </div>
         </section>
 
@@ -485,12 +542,16 @@ class DazeDashboardPanel extends HTMLElement {
             ${this._metric("mdi:cash", "Tariffa energetica", this._state(e.tariff))}
             ${this._metric("mdi:chip", "Firmware", this._state(e.firmware))}
             ${this._metric("mdi:application-cog-outline", "Software", this._state(e.software))}
-            ${this._metric("mdi:identifier", "Wallbox rilevata", e.prefix ? e.prefix.replace("sensor.", "") : "—")}
+            ${this._metric("mdi:shield-check-outline", "Integrazione", "ha-daze")}
           </div>
         </section>
 
         <div class="footer">
-          DAZE Dashboard v0.3.0 · rilevamento entità generico · nessun entity_id personale hardcoded
+          <span>DAZE Dashboard</span>
+          <span>·</span>
+          <span>v0.4.0</span>
+          <span>·</span>
+          <span>Powered by ha-daze</span>
         </div>
       </main>
     `;

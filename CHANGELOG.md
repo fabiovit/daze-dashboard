@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.4.0
+
+### Live dashboard refinement
+
+- Redesigned the charging hero with larger live power display.
+- Added a dynamic power bar based on wallbox power, maximum current and voltage.
+- Added human-friendly EVSE status labels such as `In attesa`, `In carica` and `Auto collegata`.
+- Removed the detected wallbox prefix/serial from the visible UI.
+- Wi-Fi now shows connection availability instead of exposing the SSID.
+- Simplified diagnostic labels (`Case`, `Scheda`, `Ventola`, `Wi-Fi`).
+- Improved system error presentation.
+- Removed developer/privacy debug text from the footer.
+- Footer now shows only DAZE Dashboard version and `Powered by ha-daze`.
+- Kept generic runtime entity discovery and no personal entity IDs.
+
 ## 0.3.0
 
 ### Generic DAZE entity discovery

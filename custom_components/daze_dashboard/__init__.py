@@ -49,9 +49,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             webcomponent_name=PANEL_COMPONENT,
             sidebar_title=PANEL_TITLE,
             sidebar_icon=PANEL_ICON,
-            module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=0.3.0",
+            module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=0.4.0",
             require_admin=False,
-            config={"version": "0.3.0"},
+            config={"version": "0.4.0"},
         )
         hass.data[f"{DOMAIN}_panel_registered"] = True
 
