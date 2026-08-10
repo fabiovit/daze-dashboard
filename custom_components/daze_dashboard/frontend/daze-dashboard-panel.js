@@ -1,26 +1,3 @@
-const DAZE = {
-  tariff: "sensor.casa_vittori_saleri_tariffa_energetica",
-  gridCurrent: "sensor.garage_corrente_di_rete_l1",
-  wifi: "sensor.garage_ssid_wi_fi",
-  firmware: "sensor.garage_versione_firmware",
-  software: "sensor.garage_versione_software",
-
-  current: "sensor.garage_25dt0102020_corrente_di_carica_l1",
-  sessionEnergy: "sensor.garage_25dt0102020_energia_sessione",
-  systemError: "sensor.garage_25dt0102020_errore_di_sistema",
-  rawPower: "sensor.garage_25dt0102020_potenza",
-  status: "sensor.garage_25dt0102020_codice_stato",
-  evse: "sensor.garage_25dt0102020_codice_stato_evse",
-  voltage: "sensor.garage_25dt0102020_tensione_l1",
-  maxCurrent: "sensor.garage_25dt0102020_corrente_di_carica_massima",
-  fan: "sensor.garage_25dt0102020_stato_ventola",
-  caseTemp: "sensor.garage_25dt0102020_temperatura_case",
-  boardTemp: "sensor.garage_25dt0102020_temperatura_scheda",
-
-  powerKw: "sensor.daze_potenza_ricarica",
-  charging: "binary_sensor.ev_in_carica_a_casa",
-};
-
 class DazeDashboardPanel extends HTMLElement {
   constructor() {
     super();
@@ -47,7 +24,7 @@ class DazeDashboardPanel extends HTMLElement {
   }
 
   _entity(entityId) {
-    return this._hass?.states?.[entityId];
+    return entityId ? this._hass?.states?.[entityId] : undefined;
   }
 
   _state(entityId, fallback = "—") {
@@ -65,55 +42,164 @@ class DazeDashboardPanel extends HTMLElement {
   _number(entityId, decimals = 1, suffix = "") {
     const raw = this._state(entityId, null);
     if (raw === null) return "—";
+
     const n = Number(raw);
     if (!Number.isFinite(n)) return `${raw}${suffix}`;
+
     return `${n.toLocaleString("it-IT", {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     })}${suffix}`;
   }
 
-  _isOn(entityId) {
-    return this._state(entityId, "off") === "on";
+  _allSensorIds() {
+    return Object.keys(this._hass?.states || {}).filter((id) => id.startsWith("sensor."));
   }
 
-  _power() {
-    const kwRaw = this._state(DAZE.powerKw, null);
-    if (kwRaw !== null) {
-      const kw = Number(kwRaw);
-      if (Number.isFinite(kw)) {
-        return `${kw.toLocaleString("it-IT", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })} kW`;
+  _findFirstBySuffix(...suffixes) {
+    const ids = this._allSensorIds();
+    for (const suffix of suffixes) {
+      const match = ids.find((id) => id.endsWith(suffix));
+      if (match) return match;
+    }
+    return undefined;
+  }
+
+  _findChargerPrefix() {
+    const evse = this._findFirstBySuffix(
+      "_codice_stato_evse",
+      "_stato_evse",
+      "_evse_state"
+    );
+
+    if (!evse) return undefined;
+
+    const suffixes = [
+      "_codice_stato_evse",
+      "_stato_evse",
+      "_evse_state"
+    ];
+
+    for (const suffix of suffixes) {
+      if (evse.endsWith(suffix)) {
+        return evse.slice(0, -suffix.length);
       }
     }
 
-    const wattsRaw = this._state(DAZE.rawPower, null);
-    if (wattsRaw !== null) {
-      const watts = Number(wattsRaw);
-      if (Number.isFinite(watts)) {
-        return `${(watts / 1000).toLocaleString("it-IT", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })} kW`;
-      }
-    }
-
-    return "—";
+    return undefined;
   }
 
-  _statusTone() {
-    if (this._isOn(DAZE.charging)) return "charging";
+  _withPrefix(prefix, ...suffixes) {
+    if (!prefix) return undefined;
 
-    const evse = this._state(DAZE.evse, "").toLowerCase();
+    for (const suffix of suffixes) {
+      const id = `${prefix}${suffix}`;
+      if (this._hass?.states?.[id]) return id;
+    }
+
+    return undefined;
+  }
+
+  _discover() {
+    const prefix = this._findChargerPrefix();
+
+    return {
+      prefix,
+
+      status:
+        this._withPrefix(prefix, "_codice_stato", "_stato", "_status") ||
+        this._findFirstBySuffix("_codice_stato", "_stato"),
+
+      evse:
+        this._withPrefix(prefix, "_codice_stato_evse", "_stato_evse", "_evse_state") ||
+        this._findFirstBySuffix("_codice_stato_evse", "_stato_evse", "_evse_state"),
+
+      sessionEnergy:
+        this._withPrefix(prefix, "_energia_sessione", "_session_energy") ||
+        this._findFirstBySuffix("_energia_sessione", "_session_energy"),
+
+      rawPower:
+        this._withPrefix(prefix, "_potenza", "_power") ||
+        this._findFirstBySuffix("_potenza", "_power"),
+
+      current:
+        this._withPrefix(prefix, "_corrente_di_carica_l1", "_charging_current_l1") ||
+        this._findFirstBySuffix("_corrente_di_carica_l1", "_charging_current_l1"),
+
+      voltage:
+        this._withPrefix(prefix, "_tensione_l1", "_voltage_l1") ||
+        this._findFirstBySuffix("_tensione_l1", "_voltage_l1"),
+
+      maxCurrent:
+        this._withPrefix(prefix, "_corrente_di_carica_massima", "_maximum_charging_current") ||
+        this._findFirstBySuffix("_corrente_di_carica_massima", "_maximum_charging_current"),
+
+      fan:
+        this._withPrefix(prefix, "_stato_ventola", "_fan_state") ||
+        this._findFirstBySuffix("_stato_ventola", "_fan_state"),
+
+      caseTemp:
+        this._withPrefix(prefix, "_temperatura_case", "_case_temperature") ||
+        this._findFirstBySuffix("_temperatura_case", "_case_temperature"),
+
+      boardTemp:
+        this._withPrefix(prefix, "_temperatura_scheda", "_board_temperature") ||
+        this._findFirstBySuffix("_temperatura_scheda", "_board_temperature"),
+
+      systemError:
+        this._withPrefix(prefix, "_errore_di_sistema", "_system_error") ||
+        this._findFirstBySuffix("_errore_di_sistema", "_system_error"),
+
+      gridCurrent:
+        this._findFirstBySuffix("_corrente_di_rete_l1", "_grid_current_l1"),
+
+      wifi:
+        this._findFirstBySuffix("_ssid_wi_fi", "_wifi_ssid", "_ssid_wifi"),
+
+      firmware:
+        this._findFirstBySuffix("_versione_firmware", "_firmware_version"),
+
+      software:
+        this._findFirstBySuffix("_versione_software", "_software_version"),
+
+      tariff:
+        this._findFirstBySuffix("_tariffa_energetica", "_energy_tariff"),
+    };
+  }
+
+  _rawPowerWatts(entities) {
+    const raw = this._state(entities.rawPower, null);
+    if (raw === null) return NaN;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : NaN;
+  }
+
+  _power(entities) {
+    const watts = this._rawPowerWatts(entities);
+    if (!Number.isFinite(watts)) return "—";
+
+    return `${(watts / 1000).toLocaleString("it-IT", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })} kW`;
+  }
+
+  _isCharging(entities) {
+    const watts = this._rawPowerWatts(entities);
+    return Number.isFinite(watts) && watts > 300;
+  }
+
+  _statusTone(entities) {
+    if (this._isCharging(entities)) return "charging";
+
+    const evse = this._state(entities.evse, "").toLowerCase();
     if (!evse) return "offline";
     if (evse.includes("attesa") || evse.includes("standby")) return "idle";
     return "connected";
   }
 
-  _errorTone() {
-    const err = this._state(DAZE.systemError, "").toLowerCase();
+  _errorTone(entities) {
+    const err = this._state(entities.systemError, "").toLowerCase();
     if (!err) return "neutral";
     if (err.includes("nessun") || err.includes("no error")) return "ok";
     return "bad";
@@ -135,16 +221,17 @@ class DazeDashboardPanel extends HTMLElement {
     if (!this.shadowRoot) return;
 
     if (!this._hass) {
-      this.shadowRoot.innerHTML = `<div style="padding:24px">Caricamento DAZE Dashboard…</div>`;
+      this.shadowRoot.innerHTML = `<div style="padding:24px">Loading DAZE Dashboard…</div>`;
       return;
     }
 
-    const charging = this._isOn(DAZE.charging);
-    const status = this._state(DAZE.status, "Stato non disponibile");
-    const evse = this._state(DAZE.evse, "Stato EVSE non disponibile");
-    const tone = this._statusTone();
-    const errorTone = this._errorTone();
-    const error = this._state(DAZE.systemError, "—");
+    const e = this._discover();
+    const charging = this._isCharging(e);
+    const status = this._state(e.status, "Status unavailable");
+    const evse = this._state(e.evse, "EVSE status unavailable");
+    const tone = this._statusTone(e);
+    const errorTone = this._errorTone(e);
+    const error = this._state(e.systemError, "—");
 
     const heroLabel = charging ? "IN CARICA" : String(evse).toUpperCase();
 
@@ -353,7 +440,7 @@ class DazeDashboardPanel extends HTMLElement {
             </div>
 
             <div class="power-block">
-              <div class="power">${this._power()}</div>
+              <div class="power">${this._power(e)}</div>
               <div class="power-sub">${charging ? "Potenza di ricarica" : "Potenza wallbox"}</div>
             </div>
           </div>
@@ -366,12 +453,12 @@ class DazeDashboardPanel extends HTMLElement {
           </div>
           <div class="metrics">
             ${this._metric("mdi:ev-plug-type2", "Stato EVSE", evse)}
-            ${this._metric("mdi:lightning-bolt-circle", "Energia sessione", this._number(DAZE.sessionEnergy, 2, " kWh"))}
-            ${this._metric("mdi:current-ac", "Corrente L1", this._number(DAZE.current, 1, " A"))}
-            ${this._metric("mdi:sine-wave", "Tensione L1", this._number(DAZE.voltage, 0, " V"))}
-            ${this._metric("mdi:flash", "Potenza grezza", this._number(DAZE.rawPower, 0, " W"))}
-            ${this._metric("mdi:current-ac", "Corrente massima", this._number(DAZE.maxCurrent, 1, " A"))}
-            ${this._metric("mdi:transmission-tower", "Corrente rete L1", this._number(DAZE.gridCurrent, 1, " A"))}
+            ${this._metric("mdi:lightning-bolt-circle", "Energia sessione", this._number(e.sessionEnergy, 2, " kWh"))}
+            ${this._metric("mdi:current-ac", "Corrente L1", this._number(e.current, 1, " A"))}
+            ${this._metric("mdi:sine-wave", "Tensione L1", this._number(e.voltage, 0, " V"))}
+            ${this._metric("mdi:flash", "Potenza grezza", this._number(e.rawPower, 0, " W"))}
+            ${this._metric("mdi:current-ac", "Corrente massima", this._number(e.maxCurrent, 1, " A"))}
+            ${this._metric("mdi:transmission-tower", "Corrente rete L1", this._number(e.gridCurrent, 1, " A"))}
             ${this._metric("mdi:alert-circle-outline", "Errore sistema", error, errorTone)}
           </div>
         </section>
@@ -382,10 +469,10 @@ class DazeDashboardPanel extends HTMLElement {
             Diagnostica wallbox
           </div>
           <div class="metrics">
-            ${this._metric("mdi:thermometer", "Temperatura case", this._number(DAZE.caseTemp, 1, " °C"))}
-            ${this._metric("mdi:thermometer-lines", "Temperatura scheda", this._number(DAZE.boardTemp, 1, " °C"))}
-            ${this._metric("mdi:fan", "Stato ventola", this._state(DAZE.fan))}
-            ${this._metric("mdi:wifi", "SSID Wi-Fi", this._state(DAZE.wifi))}
+            ${this._metric("mdi:thermometer", "Temperatura case", this._number(e.caseTemp, 1, " °C"))}
+            ${this._metric("mdi:thermometer-lines", "Temperatura scheda", this._number(e.boardTemp, 1, " °C"))}
+            ${this._metric("mdi:fan", "Stato ventola", this._state(e.fan))}
+            ${this._metric("mdi:wifi", "SSID Wi-Fi", this._state(e.wifi))}
           </div>
         </section>
 
@@ -395,15 +482,15 @@ class DazeDashboardPanel extends HTMLElement {
             Informazioni DAZE
           </div>
           <div class="metrics">
-            ${this._metric("mdi:cash", "Tariffa energetica", this._state(DAZE.tariff))}
-            ${this._metric("mdi:chip", "Firmware", this._state(DAZE.firmware))}
-            ${this._metric("mdi:application-cog-outline", "Software", this._state(DAZE.software))}
-            ${this._metric("mdi:home-assistant", "Ricarica HA", this._entity(DAZE.charging) ? (charging ? "Attiva" : "Non attiva") : "Sensore opzionale assente")}
+            ${this._metric("mdi:cash", "Tariffa energetica", this._state(e.tariff))}
+            ${this._metric("mdi:chip", "Firmware", this._state(e.firmware))}
+            ${this._metric("mdi:application-cog-outline", "Software", this._state(e.software))}
+            ${this._metric("mdi:identifier", "Wallbox rilevata", e.prefix ? e.prefix.replace("sensor.", "") : "—")}
           </div>
         </section>
 
         <div class="footer">
-          DAZE Dashboard v0.3.0 · dati live da Home Assistant / ha-daze
+          DAZE Dashboard v0.3.0 · rilevamento entità generico · nessun entity_id personale hardcoded
         </div>
       </main>
     `;

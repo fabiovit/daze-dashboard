@@ -101,6 +101,18 @@ Restart Home Assistant, then add **DAZE Dashboard** from:
 Settings → Devices & services → Add integration
 ```
 
+
+## 🔐 Privacy and entity discovery
+
+DAZE Dashboard does not ship with personal Home Assistant entity IDs.
+
+The frontend discovers compatible DAZE entities at runtime using generic suffixes
+and the common charger entity prefix exposed by `ha-daze`.
+
+Names of homes, rooms, wallboxes, serial numbers, vehicles, people and custom
+helpers are not hardcoded in the public project.
+
+
 ## ✨ Current features
 
 - Home Assistant Config Flow — no YAML required
@@ -115,11 +127,6 @@ Settings → Devices & services → Add integration
 - Maximum charging current
 - Case and board temperatures
 - Fan status
-- System error status
-- Grid current
-- Energy tariff
-- Wi-Fi SSID
-- Firmware and software versions
 - Responsive interface
 - Home Assistant light/dark theme compatibility
 

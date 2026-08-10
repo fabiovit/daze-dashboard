@@ -2,18 +2,17 @@
 
 ## 0.3.0
 
-### DAZE entity coverage
+### Generic DAZE entity discovery
 
-- Added all currently available `ha-daze` entities from the reference installation.
-- Added energy tariff, grid current, Wi-Fi SSID, firmware and software information.
-- Added system error status.
-- Added raw wallbox power alongside the converted kW value.
-- Added charging current, maximum current, voltage and session energy.
-- Added case and board temperatures.
-- Added fan state.
-- Redesigned the main panel into charging, diagnostics and information sections.
-- Kept optional Home Assistant charging helper support.
-- Updated frontend version to 0.3.0.
+- Added generic runtime discovery for the current `ha-daze` sensor set.
+- Added wallbox status, EVSE status, power, session energy, current, voltage and maximum current.
+- Added grid current, system error, fan state, case temperature and board temperature.
+- Added energy tariff, Wi-Fi SSID, firmware and software information.
+- Derives the common charger prefix from the EVSE entity instead of using a fixed wallbox name or serial.
+- Removed all user-specific entity IDs from the public frontend.
+- Removed dependencies on private vehicle, photovoltaic and helper entities.
+- Charging state is derived directly from DAZE wallbox power.
+- Added privacy/entity-discovery documentation.
 
 ## 0.2.1
 
