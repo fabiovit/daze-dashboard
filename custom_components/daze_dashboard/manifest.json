@@ -1,7 +1,7 @@
 {
   "domain": "daze_dashboard",
   "name": "DAZE Dashboard",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "documentation": "https://github.com/fabiovit/daze-dashboard",
   "issue_tracker": "https://github.com/fabiovit/daze-dashboard/issues",
   "codeowners": [

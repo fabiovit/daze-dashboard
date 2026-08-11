@@ -301,7 +301,21 @@ class DazeDashboardPanel extends HTMLElement {
     `;
   }
 
+  _toggleSidebar() {
+    this.dispatchEvent(
+      new CustomEvent("hass-toggle-menu", {
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
   _bindEvents() {
+    const menuButton = this.shadowRoot.querySelector("[data-menu-toggle]");
+    if (menuButton) {
+      menuButton.addEventListener("click", () => this._toggleSidebar());
+    }
+
     this.shadowRoot.querySelectorAll("[data-view]").forEach((button) => {
       button.addEventListener("click", () => {
         this._activeView = button.dataset.view;
@@ -521,6 +535,11 @@ class DazeDashboardPanel extends HTMLElement {
         .force-light .hero,.force-light .section,.force-light .feature-card,.force-light .session-card,.force-light .nav{background-color:var(--panel-card)!important}
         .force-dark .metric,.force-dark .diag-row,.force-dark .status-pill,.force-dark .power-track,
         .force-light .metric,.force-light .diag-row,.force-light .status-pill,.force-light .power-track{background:var(--panel-soft)!important}
+        .topbar{height:56px;display:flex;align-items:center;gap:8px;padding:0 12px;position:sticky;top:0;z-index:20;background:var(--app-header-background-color,var(--card-background-color));color:var(--app-header-text-color,var(--primary-text-color));border-bottom:1px solid var(--divider-color)}
+        .menu-button{width:40px;height:40px;padding:0;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:transparent;color:inherit}
+        .menu-button:hover{background:color-mix(in srgb,currentColor 9%,transparent)}
+        .menu-button:focus-visible{outline:2px solid var(--primary-color);outline-offset:2px}
+        .topbar-title{font-size:20px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .page{max-width:1240px;margin:0 auto;padding:24px}
         .hero{position:relative;border-radius:32px;padding:36px;border:1px solid var(--divider-color);background:radial-gradient(circle at 82% 8%,color-mix(in srgb,var(--daze-accent) 24%,transparent),transparent 38%),radial-gradient(circle at 10% 110%,rgba(99,102,241,.12),transparent 42%),var(--card-background-color);overflow:hidden}
         .hero-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:32px}
@@ -587,7 +606,7 @@ class DazeDashboardPanel extends HTMLElement {
               : this._renderOverview(evse,error,charging)
         ) : `<div class="notice">Nessuna entità compatibile con ha-daze è stata rilevata. Installa e configura prima l'integrazione ha-daze.</div>`}
 
-        <div class="footer"><span>DAZE Dashboard</span><span>·</span><span>v1.0.0</span><span>·</span><span>Stable</span><span>·</span><span>Powered by ha-daze</span></div>
+        <div class="footer"><span>DAZE Dashboard</span><span>·</span><span>v1.0.1</span><span>·</span><span>Stable</span><span>·</span><span>Powered by ha-daze</span></div>
       </main>
     `;
 
