@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.0.4 — Integrated Mobile Header
+
+- Reworked mobile navigation to match the visual pattern used by PawBook.
+- The Home Assistant hamburger menu (☰) now lives inside a dedicated mobile header.
+- Added a compact DAZE brand block with icon, title and subtitle beside the menu.
+- The charging hero now starts below the mobile header and uses the full available width.
+- The mobile header is completely hidden on desktop/tablet layouts.
+- Uses Home Assistant's native `hass-toggle-menu` event.
+- No changes to entity discovery, WebSocket API, privacy handling or DAZE telemetry.
+
+## 1.0.3 — Mobile Menu Fix
+
+- Home Assistant hamburger menu (☰) is now shown only on mobile.
+- Desktop and tablet layouts no longer display the extra menu button.
+- Mobile keeps the native `hass-toggle-menu` behavior.
+- Restored full-width DAZE hero alignment on larger screens.
+- No changes to entity discovery, WebSocket API, privacy handling or telemetry.
+
 ## 1.0.2 — Recovery + Home Assistant Menu
 
 - Rebuilt from the known-working v1.0.0 stable package.

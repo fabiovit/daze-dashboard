@@ -535,39 +535,70 @@ class DazeDashboardPanel extends HTMLElement {
         .force-light .hero,.force-light .section,.force-light .feature-card,.force-light .session-card,.force-light .nav{background-color:var(--panel-card)!important}
         .force-dark .metric,.force-dark .diag-row,.force-dark .status-pill,.force-dark .power-track,
         .force-light .metric,.force-light .diag-row,.force-light .status-pill,.force-light .power-track{background:var(--panel-soft)!important}
-        .page{max-width:1240px;margin:0 auto;padding:24px}
-        .daze-header-row{
-          display:flex;
-          align-items:flex-start;
-          gap:12px;
+        .mobile-app-header{
+          display:none;
         }
-        .ha-menu-btn{
+        .mobile-header-menu{
           width:44px;
           height:44px;
           flex:0 0 44px;
-          margin-top:4px;
           padding:0;
           border:0;
           border-radius:14px;
+          background:transparent;
+          color:var(--primary-text-color);
           display:grid;
           place-items:center;
           cursor:pointer;
-          background:var(--card-background-color);
-          color:var(--primary-text-color);
-          box-shadow:var(--ha-card-box-shadow,0 3px 14px rgba(0,0,0,.12));
         }
-        .ha-menu-btn ha-icon{
-          --mdc-icon-size:28px;
+        .mobile-header-menu ha-icon{
+          --mdc-icon-size:30px;
         }
-        .ha-menu-btn:focus-visible{
-          outline:2px solid var(--primary-color);
-          outline-offset:2px;
-        }
-        .daze-hero-wrap{
+        .mobile-header-brand{
+          display:flex;
+          align-items:center;
+          gap:12px;
           min-width:0;
           flex:1;
         }
-        .hero{position:relative;border-radius:32px;padding:36px;border:1px solid var(--divider-color);background:radial-gradient(circle at 82% 8%,color-mix(in srgb,var(--daze-accent) 24%,transparent),transparent 38%),radial-gradient(circle at 10% 110%,rgba(99,102,241,.12),transparent 42%),var(--card-background-color);overflow:hidden}
+        .mobile-header-logo{
+          width:48px;
+          height:48px;
+          flex:0 0 48px;
+          border-radius:16px;
+          display:grid;
+          place-items:center;
+          background:var(--card-background-color);
+          border:1px solid var(--divider-color);
+          box-shadow:var(--ha-card-box-shadow,0 3px 14px rgba(0,0,0,.08));
+          color:var(--daze-accent);
+        }
+        .mobile-header-logo ha-icon{
+          --mdc-icon-size:29px;
+        }
+        .mobile-header-text{
+          min-width:0;
+        }
+        .mobile-header-title{
+          font-size:28px;
+          line-height:1;
+          font-weight:900;
+          letter-spacing:-.035em;
+          white-space:nowrap;
+          overflow:hidden;
+          text-overflow:ellipsis;
+        }
+        .mobile-header-subtitle{
+          margin-top:5px;
+          font-size:14px;
+          line-height:1.2;
+          color:var(--secondary-text-color);
+          white-space:nowrap;
+          overflow:hidden;
+          text-overflow:ellipsis;
+        }
+        .page{max-width:1240px;margin:0 auto;padding:24px}
+.hero{position:relative;border-radius:32px;padding:36px;border:1px solid var(--divider-color);background:radial-gradient(circle at 82% 8%,color-mix(in srgb,var(--daze-accent) 24%,transparent),transparent 38%),radial-gradient(circle at 10% 110%,rgba(99,102,241,.12),transparent 42%),var(--card-background-color);overflow:hidden}
         .hero-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:32px}
         .kicker{font-size:11px;font-weight:850;letter-spacing:.18em;opacity:.52;margin-bottom:10px}
         h1{margin:0;font-size:clamp(46px,7vw,76px);letter-spacing:-.065em;line-height:.9}
@@ -594,13 +625,31 @@ class DazeDashboardPanel extends HTMLElement {
         .diag-track{height:5px;margin-top:9px;border-radius:999px;background:var(--card-background-color);overflow:hidden}.diag-fill{height:100%;border-radius:999px;background:#64748b}.diag-fill.ok{background:#22c55e}.diag-fill.warn{background:#f59e0b}.diag-fill.bad{background:#ef4444}
         .project-line{display:flex;justify-content:space-between;gap:18px;padding:11px 0;border-bottom:1px solid var(--divider-color)}.project-note{margin-top:14px;font-size:12px;opacity:.58;line-height:1.5}
         .notice{margin-top:18px;border-radius:18px;padding:16px 18px;background:var(--secondary-background-color);opacity:.8}.footer{display:flex;justify-content:center;gap:8px;font-size:12px;opacity:.5;margin:18px 0 6px}
-        @media(max-width:1020px){.session-grid{grid-template-columns:repeat(2,1fr)}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:760px){.hero-grid{grid-template-columns:1fr}.power-block{text-align:left;min-width:0}.power-row{justify-content:flex-start}.session-strip{justify-content:flex-start}.session-item{text-align:left}}@media(max-width:540px){.daze-header-row{gap:8px}.ha-menu-btn{width:42px;height:42px;flex-basis:42px;border-radius:13px}.page{padding:14px}.hero{padding:22px;border-radius:22px}.section{padding:15px}.session-grid,.overview-grid,.metrics{grid-template-columns:1fr}.nav{width:100%}.nav-button{flex:1;justify-content:center;padding:10px 7px}.nav-button span{font-size:11px}.chart-svg{height:180px}}
+        @media(max-width:1020px){.session-grid{grid-template-columns:repeat(2,1fr)}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:760px){
+          .mobile-app-header{
+            display:flex;
+            align-items:center;
+            gap:8px;
+            min-height:72px;
+            margin:0 0 14px;
+            padding:10px 4px 8px;
+          }
+          .mobile-header-menu{
+            display:grid;
+          }
+.hero-grid{grid-template-columns:1fr}.power-block{text-align:left;min-width:0}.power-row{justify-content:flex-start}.session-strip{justify-content:flex-start}.session-item{text-align:left}}@media(max-width:540px){
+          .mobile-app-header{min-height:68px;padding:8px 0 8px;gap:8px}
+          .mobile-header-menu{width:42px;height:42px;flex-basis:42px}
+          .mobile-header-logo{width:46px;height:46px;flex-basis:46px;border-radius:15px}
+          .mobile-header-title{font-size:26px}
+          .mobile-header-subtitle{font-size:13px}
+.page{padding:14px}.hero{padding:22px;border-radius:22px}.section{padding:15px}.session-grid,.overview-grid,.metrics{grid-template-columns:1fr}.nav{width:100%}.nav-button{flex:1;justify-content:center;padding:10px 7px}.nav-button span{font-size:11px}.chart-svg{height:180px}}
       </style>
 
       <main class="page ${forcedThemeClass}">
-        <div class="daze-header-row">
+        <header class="mobile-app-header">
           <button
-            class="ha-menu-btn"
+            class="mobile-header-menu"
             data-menu-toggle
             type="button"
             aria-label="Apri menu Home Assistant"
@@ -608,7 +657,17 @@ class DazeDashboardPanel extends HTMLElement {
           >
             <ha-icon icon="mdi:menu"></ha-icon>
           </button>
-          <div class="daze-hero-wrap">
+
+          <div class="mobile-header-brand">
+            <div class="mobile-header-logo">
+              <ha-icon icon="mdi:ev-station"></ha-icon>
+            </div>
+            <div class="mobile-header-text">
+              <div class="mobile-header-title">DAZE</div>
+              <div class="mobile-header-subtitle">Wallbox Dashboard</div>
+            </div>
+          </div>
+        </header>
         <section class="hero ${tone}">
           <div class="hero-grid">
             <div>
@@ -628,8 +687,6 @@ class DazeDashboardPanel extends HTMLElement {
             </div>
           </div>
         </section>
-          </div>
-        </div>
 
         <nav class="nav">
           ${this._navButton("overview","mdi:view-dashboard-outline","Panoramica")}
@@ -645,7 +702,7 @@ class DazeDashboardPanel extends HTMLElement {
               : this._renderOverview(evse,error,charging)
         ) : `<div class="notice">Nessuna entità compatibile con ha-daze è stata rilevata. Installa e configura prima l'integrazione ha-daze.</div>`}
 
-        <div class="footer"><span>DAZE Dashboard</span><span>·</span><span>v1.0.2</span><span>·</span><span>Stable</span><span>·</span><span>Powered by ha-daze</span></div>
+        <div class="footer"><span>DAZE Dashboard</span><span>·</span><span>v1.0.4</span><span>·</span><span>Stable</span><span>·</span><span>Powered by ha-daze</span></div>
       </main>
     `;
 
