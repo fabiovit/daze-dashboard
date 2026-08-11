@@ -1,12 +1,13 @@
 # Changelog
 
-## 1.0.1 — Sidebar Menu Hotfix
+## 1.0.1 — Home Assistant Menu Hotfix
 
-- Added the Home Assistant hamburger menu (☰) to the top-left of the DAZE Dashboard panel.
-- The button fires Home Assistant's native `hass-toggle-menu` event.
-- Added a sticky Home Assistant-style top bar.
-- Improved navigation on mobile, tablet and when the sidebar is collapsed.
-- No changes to DAZE discovery or WebSocket handling.
+- Added the Home Assistant hamburger menu (☰) at the far left of the DAZE header area.
+- Matched the navigation pattern used by PawBook: menu button on the left, dashboard content immediately beside it.
+- Uses Home Assistant's native `hass-toggle-menu` event to open/close the sidebar.
+- No standalone top bar was added.
+- Improved mobile navigation.
+- No changes to DAZE discovery, WebSocket data, privacy handling or charging features.
 
 ## 1.0.0 — First Stable Release
 

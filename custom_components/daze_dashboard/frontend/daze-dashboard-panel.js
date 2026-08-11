@@ -535,13 +535,25 @@ class DazeDashboardPanel extends HTMLElement {
         .force-light .hero,.force-light .section,.force-light .feature-card,.force-light .session-card,.force-light .nav{background-color:var(--panel-card)!important}
         .force-dark .metric,.force-dark .diag-row,.force-dark .status-pill,.force-dark .power-track,
         .force-light .metric,.force-light .diag-row,.force-light .status-pill,.force-light .power-track{background:var(--panel-soft)!important}
-        .topbar{height:56px;display:flex;align-items:center;gap:8px;padding:0 12px;position:sticky;top:0;z-index:20;background:var(--app-header-background-color,var(--card-background-color));color:var(--app-header-text-color,var(--primary-text-color));border-bottom:1px solid var(--divider-color)}
-        .menu-button{width:40px;height:40px;padding:0;border:0;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:transparent;color:inherit}
-        .menu-button:hover{background:color-mix(in srgb,currentColor 9%,transparent)}
-        .menu-button:focus-visible{outline:2px solid var(--primary-color);outline-offset:2px}
-        .topbar-title{font-size:20px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
         .page{max-width:1240px;margin:0 auto;padding:24px}
         .hero{position:relative;border-radius:32px;padding:36px;border:1px solid var(--divider-color);background:radial-gradient(circle at 82% 8%,color-mix(in srgb,var(--daze-accent) 24%,transparent),transparent 38%),radial-gradient(circle at 10% 110%,rgba(99,102,241,.12),transparent 42%),var(--card-background-color);overflow:hidden}
+        .hero-shell{display:flex;align-items:flex-start;gap:16px}
+        .hero-menu-button{
+          width:48px;height:48px;flex:0 0 48px;
+          margin-top:0;padding:0;border:0;border-radius:16px;
+          display:grid;place-items:center;cursor:pointer;
+          background:var(--card-background-color);
+          color:var(--primary-text-color);
+          box-shadow:var(--ha-card-box-shadow,0 3px 14px rgba(0,0,0,.12));
+        }
+        .hero-menu-button:hover{
+          background:color-mix(in srgb,var(--primary-text-color) 7%,var(--card-background-color));
+        }
+        .hero-menu-button:focus-visible{
+          outline:2px solid var(--primary-color);outline-offset:2px;
+        }
+        .hero-menu-button ha-icon{--mdc-icon-size:30px}
+        .hero-main{min-width:0;flex:1}
         .hero-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:32px}
         .kicker{font-size:11px;font-weight:850;letter-spacing:.18em;opacity:.52;margin-bottom:10px}
         h1{margin:0;font-size:clamp(46px,7vw,76px);letter-spacing:-.065em;line-height:.9}
@@ -568,29 +580,51 @@ class DazeDashboardPanel extends HTMLElement {
         .diag-track{height:5px;margin-top:9px;border-radius:999px;background:var(--card-background-color);overflow:hidden}.diag-fill{height:100%;border-radius:999px;background:#64748b}.diag-fill.ok{background:#22c55e}.diag-fill.warn{background:#f59e0b}.diag-fill.bad{background:#ef4444}
         .project-line{display:flex;justify-content:space-between;gap:18px;padding:11px 0;border-bottom:1px solid var(--divider-color)}.project-note{margin-top:14px;font-size:12px;opacity:.58;line-height:1.5}
         .notice{margin-top:18px;border-radius:18px;padding:16px 18px;background:var(--secondary-background-color);opacity:.8}.footer{display:flex;justify-content:center;gap:8px;font-size:12px;opacity:.5;margin:18px 0 6px}
-        @media(max-width:1020px){.session-grid{grid-template-columns:repeat(2,1fr)}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:760px){.hero-grid{grid-template-columns:1fr}.power-block{text-align:left;min-width:0}.power-row{justify-content:flex-start}.session-strip{justify-content:flex-start}.session-item{text-align:left}}@media(max-width:540px){.page{padding:14px}.hero{padding:22px;border-radius:22px}.section{padding:15px}.session-grid,.overview-grid,.metrics{grid-template-columns:1fr}.nav{width:100%}.nav-button{flex:1;justify-content:center;padding:10px 7px}.nav-button span{font-size:11px}.chart-svg{height:180px}}
+        @media(max-width:1020px){.session-grid{grid-template-columns:repeat(2,1fr)}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:760px){.hero-shell{gap:10px}.hero-menu-button{width:44px;height:44px;flex-basis:44px;border-radius:14px}.hero-grid{grid-template-columns:1fr}.power-block{text-align:left;min-width:0}.power-row{justify-content:flex-start}.session-strip{justify-content:flex-start}.session-item{text-align:left}}@media(max-width:540px){.hero-shell{align-items:flex-start}.hero-menu-button{width:42px;height:42px;flex-basis:42px;border-radius:13px}.page{padding:14px}.hero{padding:22px;border-radius:22px}.section{padding:15px}.session-grid,.overview-grid,.metrics{grid-template-columns:1fr}.nav{width:100%}.nav-button{flex:1;justify-content:center;padding:10px 7px}.nav-button span{font-size:11px}.chart-svg{height:180px}}
       </style>
 
       <main class="page ${forcedThemeClass}">
-        <section class="hero ${tone}">
-          <div class="hero-grid">
-            <div>
-              <div class="kicker">HOME ASSISTANT · DAZE WALLBOX</div>
-              <h1>DAZE</h1>
-              <div class="status-pill"><span class="dot"></span>${heroLabel}</div>
-              <div class="hero-status">${status}</div>
-            </div>
-            <div class="power-block">
-              <div class="power-row"><div class="power">${this._power()}</div><div class="power-unit">kW</div></div>
-              <div class="power-sub">${charging ? "Potenza di ricarica" : "Potenza wallbox"}</div>
-              <div class="power-track"><div class="power-fill"></div></div>
-              <div class="session-strip">
-                <div class="session-item"><div class="session-label">Energia</div><div class="session-value">${this._number("session_energy", 2, " kWh")}</div></div>
-                <div class="session-item"><div class="session-label">Tempo live</div><div class="session-value">${charging ? this._elapsed() : "—"}</div></div>
+        <div class="hero-shell">
+          <button
+            class="hero-menu-button"
+            data-menu-toggle
+            type="button"
+            title="Apri menu Home Assistant"
+            aria-label="Apri menu Home Assistant"
+          >
+            <ha-icon icon="mdi:menu"></ha-icon>
+          </button>
+
+          <section class="hero ${tone} hero-main">
+            <div class="hero-grid">
+              <div>
+                <div class="kicker">HOME ASSISTANT · DAZE WALLBOX</div>
+                <h1>DAZE</h1>
+                <div class="status-pill"><span class="dot"></span>${heroLabel}</div>
+                <div class="hero-status">${status}</div>
+              </div>
+
+              <div class="power-block">
+                <div class="power-row">
+                  <div class="power">${this._power()}</div>
+                  <div class="power-unit">kW</div>
+                </div>
+                <div class="power-sub">${charging ? "Potenza di ricarica" : "Potenza wallbox"}</div>
+                <div class="power-track"><div class="power-fill"></div></div>
+                <div class="session-strip">
+                  <div class="session-item">
+                    <div class="session-label">Energia</div>
+                    <div class="session-value">${this._number("session_energy", 2, " kWh")}</div>
+                  </div>
+                  <div class="session-item">
+                    <div class="session-label">Tempo live</div>
+                    <div class="session-value">${charging ? this._elapsed() : "—"}</div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
 
         <nav class="nav">
           ${this._navButton("overview","mdi:view-dashboard-outline","Panoramica")}
