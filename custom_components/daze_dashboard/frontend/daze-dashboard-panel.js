@@ -316,8 +316,42 @@ class DazeDashboardPanel extends HTMLElement {
       menuButton.addEventListener("click", () => this._toggleSidebar());
     }
 
-    this.shadowRoot.querySelectorAll("[data-view]").forEach((button) => {
-      button.addEventListener("click", () => {
+    this.shadowRoot.querySelectorAll(".nav .nav-button[data-view]").forEach((button) => {
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchMoved = false;
+      let handledByTouch = false;
+
+      button.addEventListener("touchstart", (ev) => {
+        if (ev.touches?.length !== 1) return;
+        touchStartX = ev.touches[0].clientX;
+        touchStartY = ev.touches[0].clientY;
+        touchMoved = false;
+        handledByTouch = false;
+      }, { passive: true });
+
+      button.addEventListener("touchmove", (ev) => {
+        if (ev.touches?.length !== 1) return;
+        const dx = Math.abs(ev.touches[0].clientX - touchStartX);
+        const dy = Math.abs(ev.touches[0].clientY - touchStartY);
+        if (dx > 10 || dy > 10) touchMoved = true;
+      }, { passive: true });
+
+      button.addEventListener("touchend", (ev) => {
+        if (touchMoved) return;
+        handledByTouch = true;
+        ev.preventDefault();
+        this._activeView = button.dataset.view;
+        this._render();
+        setTimeout(() => { handledByTouch = false; }, 350);
+      }, { passive: false });
+
+      button.addEventListener("click", (ev) => {
+        if (handledByTouch) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          return;
+        }
         this._activeView = button.dataset.view;
         this._render();
       });
@@ -531,73 +565,11 @@ class DazeDashboardPanel extends HTMLElement {
         .force-dark{--panel-bg:#0e0f10;--panel-card:#1a1b1d;--panel-soft:#27282a;--panel-text:#f1f1f1;--panel-muted:#999}
         .force-light{--panel-bg:#f5f6f7;--panel-card:#fff;--panel-soft:#eef0f2;--panel-text:#18191a;--panel-muted:#6b7280}
         .force-dark,.force-light{background:var(--panel-bg)!important;color:var(--panel-text)!important}
-        .force-dark .hero,.force-dark .section,.force-dark .feature-card,.force-dark .session-card,.force-dark .nav,
-        .force-light .hero,.force-light .section,.force-light .feature-card,.force-light .session-card,.force-light .nav{background-color:var(--panel-card)!important}
+        .force-dark .hero,.force-dark .section,.force-dark .feature-card,.force-dark .session-card,
+        .force-light .hero,.force-light .section,.force-light .feature-card,.force-light .session-card{background-color:var(--panel-card)!important}
         .force-dark .metric,.force-dark .diag-row,.force-dark .status-pill,.force-dark .power-track,
         .force-light .metric,.force-light .diag-row,.force-light .status-pill,.force-light .power-track{background:var(--panel-soft)!important}
-        .mobile-app-header{
-          display:none;
-        }
-        .mobile-header-menu{
-          width:44px;
-          height:44px;
-          flex:0 0 44px;
-          padding:0;
-          border:0;
-          border-radius:14px;
-          background:transparent;
-          color:var(--primary-text-color);
-          display:grid;
-          place-items:center;
-          cursor:pointer;
-        }
-        .mobile-header-menu ha-icon{
-          --mdc-icon-size:30px;
-        }
-        .mobile-header-brand{
-          display:flex;
-          align-items:center;
-          gap:12px;
-          min-width:0;
-          flex:1;
-        }
-        .mobile-header-logo{
-          width:48px;
-          height:48px;
-          flex:0 0 48px;
-          border-radius:16px;
-          display:grid;
-          place-items:center;
-          background:var(--card-background-color);
-          border:1px solid var(--divider-color);
-          box-shadow:var(--ha-card-box-shadow,0 3px 14px rgba(0,0,0,.08));
-          color:var(--daze-accent);
-        }
-        .mobile-header-logo ha-icon{
-          --mdc-icon-size:29px;
-        }
-        .mobile-header-text{
-          min-width:0;
-        }
-        .mobile-header-title{
-          font-size:28px;
-          line-height:1;
-          font-weight:900;
-          letter-spacing:-.035em;
-          white-space:nowrap;
-          overflow:hidden;
-          text-overflow:ellipsis;
-        }
-        .mobile-header-subtitle{
-          margin-top:5px;
-          font-size:14px;
-          line-height:1.2;
-          color:var(--secondary-text-color);
-          white-space:nowrap;
-          overflow:hidden;
-          text-overflow:ellipsis;
-        }
-        .page{max-width:1240px;margin:0 auto;padding:24px}
+.app{width:100%;min-height:100vh;margin:0;padding:0 0 56px}.topbar{--casa-accent:var(--daze-accent);position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--primary-background-color) 96%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid color-mix(in srgb,var(--divider-color) 78%,transparent);box-shadow:0 10px 28px color-mix(in srgb,#000 4%,transparent)}.topbar-main{max-width:1480px;margin:auto;min-height:72px;padding:15px 18px 9px;display:flex;align-items:center;gap:12px}.menu-btn{display:none;border:0;background:transparent;color:var(--primary-text-color);width:42px;height:42px;border-radius:13px;align-items:center;justify-content:center;cursor:pointer;flex:none;padding:0}.menu-btn ha-icon{--mdc-icon-size:27px}.menu-btn:active{background:var(--secondary-background-color)}.app-identity{display:flex;align-items:center;gap:11px;min-width:0}.app-icon{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex:none;border:1px solid color-mix(in srgb,var(--casa-accent) 30%,var(--divider-color));background:color-mix(in srgb,var(--casa-accent) 9%,var(--card-background-color));color:var(--casa-accent)}.app-icon ha-icon{--mdc-icon-size:25px}.brand{min-width:0}.brand-line{display:flex;align-items:center;gap:8px;min-width:0}.brand-title{font-size:21px;line-height:1.05;font-weight:850;letter-spacing:-.025em}.version-badge{display:inline-flex;align-items:center;justify-content:center;padding:3px 7px;border-radius:999px;border:1px solid color-mix(in srgb,var(--casa-accent) 30%,var(--divider-color));background:color-mix(in srgb,var(--casa-accent) 9%,var(--card-background-color));color:var(--casa-accent);font-size:9px;font-weight:900;line-height:1;white-space:nowrap}.brand-subtitle{font-size:11px;color:var(--secondary-text-color);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nav-scroller{max-width:1480px;margin:auto;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-x;padding:0 18px}.nav-scroller::-webkit-scrollbar{display:none}.nav{display:flex;align-items:stretch;gap:22px;width:max-content;min-width:max-content;margin:0;padding:0;border:0;border-radius:0;background:transparent}.nav-button{position:relative;border:0;background:transparent;color:var(--secondary-text-color);border-radius:0;padding:10px 1px 12px;min-height:44px;display:flex;align-items:center;gap:7px;cursor:pointer;white-space:nowrap;font-size:12px;font-weight:720;letter-spacing:-.005em;transition:color .16s ease,opacity .16s ease,transform .12s ease;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}.nav-button::after{content:"";position:absolute;left:50%;right:50%;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--casa-accent);opacity:0;transition:left .18s ease,right .18s ease,opacity .18s ease}.nav-button ha-icon{--mdc-icon-size:19px;opacity:.78;transition:opacity .16s ease,color .16s ease,transform .16s ease}.nav-button:hover{color:var(--primary-text-color)}.nav-button:hover ha-icon{opacity:1}.nav-button:active{transform:translateY(1px)}.nav-button.active{color:var(--casa-accent);font-weight:850}.nav-button.active ha-icon{opacity:1;color:var(--casa-accent);transform:translateY(-1px)}.nav-button.active::after{left:0;right:0;opacity:1}.page{width:min(1480px,100%);margin:auto;padding:22px 22px 0}
 .hero{position:relative;border-radius:32px;padding:36px;border:1px solid var(--divider-color);background:radial-gradient(circle at 82% 8%,color-mix(in srgb,var(--daze-accent) 24%,transparent),transparent 38%),radial-gradient(circle at 10% 110%,rgba(99,102,241,.12),transparent 42%),var(--card-background-color);overflow:hidden}
         .hero-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:32px}
         .kicker{font-size:11px;font-weight:850;letter-spacing:.18em;opacity:.52;margin-bottom:10px}
@@ -610,8 +582,8 @@ class DazeDashboardPanel extends HTMLElement {
         .power-sub{margin-top:12px;opacity:.58;font-weight:700}.power-track{width:100%;height:8px;margin-top:18px;border-radius:999px;overflow:hidden;background:var(--secondary-background-color)}
         .power-fill{height:100%;width:${powerPercent}%;min-width:${charging ? "4%" : "0"};border-radius:inherit;background:linear-gradient(90deg,var(--daze-accent),#22c55e);transition:width .45s ease}
         .session-strip{display:flex;justify-content:flex-end;gap:20px;margin-top:16px}.session-item{text-align:right}.session-label,.feature-label,.metric-label,.diag-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;opacity:.5;font-weight:850}.session-value{margin-top:3px;font-size:16px;font-weight:850}
-        .nav{display:flex;gap:8px;margin-top:16px;padding:5px;border-radius:16px;background:var(--card-background-color);border:1px solid var(--divider-color);width:fit-content}
-        .nav-button{border:0;color:var(--secondary-text-color);background:transparent;padding:10px 14px;border-radius:12px;display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:750}.nav-button.active{color:var(--primary-text-color);background:var(--secondary-background-color)}
+        
+        
         .session-grid{display:grid;grid-template-columns:1.45fr repeat(3,1fr);gap:14px;margin-top:18px}.session-card,.feature-card{min-width:0;border-radius:22px;padding:20px;border:1px solid var(--divider-color);background:var(--card-background-color)}.primary-stat{background:radial-gradient(circle at 90% 10%,color-mix(in srgb,var(--daze-accent) 14%,transparent),transparent 45%),var(--card-background-color)}
         .feature-value{font-size:clamp(28px,4vw,44px);font-weight:900;letter-spacing:-.04em;margin-top:8px}.feature-value.medium{font-size:30px}.feature-value.small{font-size:26px}.feature-caption{margin-top:8px;font-size:12px;opacity:.54;font-weight:650}
         .overview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
@@ -625,50 +597,68 @@ class DazeDashboardPanel extends HTMLElement {
         .diag-track{height:5px;margin-top:9px;border-radius:999px;background:var(--card-background-color);overflow:hidden}.diag-fill{height:100%;border-radius:999px;background:#64748b}.diag-fill.ok{background:#22c55e}.diag-fill.warn{background:#f59e0b}.diag-fill.bad{background:#ef4444}
         .project-line{display:flex;justify-content:space-between;gap:18px;padding:11px 0;border-bottom:1px solid var(--divider-color)}.project-note{margin-top:14px;font-size:12px;opacity:.58;line-height:1.5}
         .notice{margin-top:18px;border-radius:18px;padding:16px 18px;background:var(--secondary-background-color);opacity:.8}.footer{display:flex;justify-content:center;gap:8px;font-size:12px;opacity:.5;margin:18px 0 6px}
-        @media(max-width:1020px){.session-grid{grid-template-columns:repeat(2,1fr)}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:760px){
-          .mobile-app-header{
-            display:flex;
-            align-items:center;
-            gap:8px;
-            min-height:72px;
-            margin:0 0 14px;
-            padding:10px 4px 8px;
-          }
-          .mobile-header-menu{
-            display:grid;
-          }
-.hero-grid{grid-template-columns:1fr}.power-block{text-align:left;min-width:0}.power-row{justify-content:flex-start}.session-strip{justify-content:flex-start}.session-item{text-align:left}}@media(max-width:540px){
-          .mobile-app-header{min-height:68px;padding:8px 0 8px;gap:8px}
-          .mobile-header-menu{width:42px;height:42px;flex-basis:42px}
-          .mobile-header-logo{width:46px;height:46px;flex-basis:46px;border-radius:15px}
-          .mobile-header-title{font-size:26px}
-          .mobile-header-subtitle{font-size:13px}
-.page{padding:14px}.hero{padding:22px;border-radius:22px}.section{padding:15px}.session-grid,.overview-grid,.metrics{grid-template-columns:1fr}.nav{width:100%}.nav-button{flex:1;justify-content:center;padding:10px 7px}.nav-button span{font-size:11px}.chart-svg{height:180px}}
+        @media(max-width:1020px){
+          .session-grid{grid-template-columns:repeat(2,1fr)}
+          .metrics{grid-template-columns:repeat(2,1fr)}
+        }
+        @media(max-width:760px){
+          .hero-grid{grid-template-columns:1fr}
+          .power-block{text-align:left;min-width:0}
+          .power-row{justify-content:flex-start}
+          .session-strip{justify-content:flex-start}
+          .session-item{text-align:left}
+        }
+        @media(max-width:620px){
+          .app{padding:0 0 42px}
+          .menu-btn{display:flex}
+          .topbar-main{min-height:62px;padding:9px 10px 7px;gap:7px}
+          .app-identity{gap:8px}
+          .app-icon{width:39px;height:39px;border-radius:12px}
+          .app-icon ha-icon{--mdc-icon-size:22px}
+          .brand-title{font-size:19px}
+          .brand-subtitle{font-size:10px;margin-top:3px}
+          .version-badge{font-size:8px;padding:3px 6px}
+          .nav-scroller{padding:0 10px}
+          .nav{gap:18px;width:max-content;min-width:max-content}
+          .nav-button{padding:9px 1px 11px;font-size:12px;min-height:42px;flex:none;justify-content:flex-start}
+          .nav-button ha-icon{--mdc-icon-size:18px}
+          .page{padding:12px 10px 0}
+          .hero{padding:22px;border-radius:24px}
+          .section{padding:15px}
+          .session-grid,.overview-grid,.metrics{grid-template-columns:1fr}
+          .chart-svg{height:180px}
+          .footer{padding:0 10px}
+        }
       </style>
 
-      <main class="page ${forcedThemeClass}">
-        <header class="mobile-app-header">
-          <button
-            class="mobile-header-menu"
-            data-menu-toggle
-            type="button"
-            aria-label="Apri menu Home Assistant"
-            title="Apri menu Home Assistant"
-          >
-            <ha-icon icon="mdi:menu"></ha-icon>
-          </button>
-
-          <div class="mobile-header-brand">
-            <div class="mobile-header-logo">
-              <ha-icon icon="mdi:ev-station"></ha-icon>
-            </div>
-            <div class="mobile-header-text">
-              <div class="mobile-header-title">DAZE</div>
-              <div class="mobile-header-subtitle">Wallbox Dashboard</div>
+      <div class="app ${forcedThemeClass}">
+        <header class="topbar">
+          <div class="topbar-main">
+            <button class="menu-btn" data-menu-toggle type="button" aria-label="Apri menu Home Assistant" title="Menu Home Assistant">
+              <ha-icon icon="mdi:menu"></ha-icon>
+            </button>
+            <div class="app-identity">
+              <div class="app-icon"><ha-icon icon="mdi:ev-station"></ha-icon></div>
+              <div class="brand">
+                <div class="brand-line">
+                  <div class="brand-title">DAZE Dashboard</div>
+                  <span class="version-badge">1.1.0</span>
+                </div>
+                <div class="brand-subtitle">Wallbox · Charge Center</div>
+              </div>
             </div>
           </div>
+          <div class="nav-scroller">
+            <nav class="nav">
+              ${this._navButton("overview", "mdi:view-dashboard-outline", "Panoramica")}
+              ${opts.show_diagnostics ? this._navButton("diagnostics", "mdi:stethoscope", "Diagnostica") : ""}
+              ${this._navButton("info", "mdi:information-outline", "Informazioni")}
+            </nav>
+          </div>
         </header>
-        <section class="hero ${tone}">
+
+        <main class="page">
+<section class="hero ${tone}">
           <div class="hero-grid">
             <div>
               <div class="kicker">HOME ASSISTANT · DAZE WALLBOX</div>
@@ -687,14 +677,7 @@ class DazeDashboardPanel extends HTMLElement {
             </div>
           </div>
         </section>
-
-        <nav class="nav">
-          ${this._navButton("overview","mdi:view-dashboard-outline","Panoramica")}
-          ${opts.show_diagnostics ? this._navButton("diagnostics","mdi:stethoscope","Diagnostica") : ""}
-          ${this._navButton("info","mdi:information-outline","Informazioni")}
-        </nav>
-
-        ${this._data.available ? (
+${this._data.available ? (
           this._activeView === "diagnostics"
             ? this._renderDiagnostics()
             : this._activeView === "info"
@@ -702,8 +685,9 @@ class DazeDashboardPanel extends HTMLElement {
               : this._renderOverview(evse,error,charging)
         ) : `<div class="notice">Nessuna entità compatibile con ha-daze è stata rilevata. Installa e configura prima l'integrazione ha-daze.</div>`}
 
-        <div class="footer"><span>DAZE Dashboard</span><span>·</span><span>v1.0.4</span><span>·</span><span>Stable</span><span>·</span><span>Powered by ha-daze</span></div>
-      </main>
+        <div class="footer"><span>DAZE Dashboard</span><span>·</span><span>v1.1.0</span><span>·</span><span>Powered by ha-daze</span></div>
+        </main>
+      </div>
     `;
 
     this._bindEvents();

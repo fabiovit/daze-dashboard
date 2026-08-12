@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0 — DOMOTICA UI Alignment
+
+- Reworked DAZE Dashboard using the current Casa/Inverter Dashboard geometry as the DOMOTICA visual master.
+- Added the shared sticky application header with icon, app name, version badge and subtitle.
+- Home Assistant hamburger menu is shown only on mobile.
+- Replaced the old pill navigation with the Casa/Inverter minimal icon + text navigation and active underline.
+- Added stable horizontal touch scrolling and first-tap navigation behavior on mobile.
+- Desktop content now uses the same full-width 1480 px shell and 22 px content margins as the updated Inverter Dashboard.
+- Mobile content uses the shared compact 10 px shell geometry.
+- Preserved all DAZE telemetry, WebSocket discovery, privacy handling, live graph and session intelligence.
+
 ## 1.0.4 — Integrated Mobile Header
 
 - Reworked mobile navigation to match the visual pattern used by PawBook.
