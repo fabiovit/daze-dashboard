@@ -1,13 +1,12 @@
 # ⚡ DAZE Dashboard
 
-A modern sidebar dashboard for DAZE EV chargers in Home Assistant.
-
-[![GitHub release](https://img.shields.io/github/v/release/fabiovit/daze-dashboard)](https://github.com/fabiovit/daze-dashboard/releases)
-[![HACS Validation](https://github.com/fabiovit/daze-dashboard/actions/workflows/validate.yml/badge.svg)](https://github.com/fabiovit/daze-dashboard/actions/workflows/validate.yml)
+[![release](https://img.shields.io/github/v/release/fabiovit/daze-dashboard?label=release)](https://github.com/fabiovit/daze-dashboard/releases)
+[![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5)](https://my.home-assistant.io/redirect/hacs_repository/?owner=fabiovit&repository=daze-dashboard&category=integration)
+[![Validate](https://github.com/fabiovit/daze-dashboard/actions/workflows/validate.yml/badge.svg)](https://github.com/fabiovit/daze-dashboard/actions/workflows/validate.yml)
 [![Hassfest](https://github.com/fabiovit/daze-dashboard/actions/workflows/hassfest.yml/badge.svg)](https://github.com/fabiovit/daze-dashboard/actions/workflows/hassfest.yml)
-[![HACS Custom](https://img.shields.io/badge/HACS-Custom%20Repository-41BDF5.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=fabiovit&repository=daze-dashboard&category=integration)
-[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.8%2B-41BDF5.svg)](https://www.home-assistant.io/)
-[![License](https://img.shields.io/github/license/fabiovit/daze-dashboard)](https://github.com/fabiovit/daze-dashboard/blob/main/LICENSE)
+[![license](https://img.shields.io/github/license/fabiovit/daze-dashboard?label=license)](https://github.com/fabiovit/daze-dashboard/blob/main/LICENSE)
+
+A modern sidebar dashboard for DAZE EV chargers in Home Assistant.
 
 > **Stable release:** v1.1.0
 
@@ -103,7 +102,6 @@ Restart Home Assistant, then add **DAZE Dashboard** from:
 Settings → Devices & services → Add integration
 ```
 
-
 ## 🔐 Privacy and entity discovery
 
 DAZE Dashboard does not ship with personal Home Assistant entity IDs.
@@ -113,8 +111,6 @@ and the common charger entity prefix exposed by `ha-daze`.
 
 Names of homes, rooms, wallboxes, serial numbers, vehicles, people and custom
 helpers are not hardcoded in the public project.
-
-
 
 ## 🧠 Backend architecture
 
@@ -142,8 +138,6 @@ DAZE Dashboard frontend
 Relevant wallbox state changes are pushed to the panel through a custom
 Home Assistant WebSocket subscription. No polling of the DAZE cloud is added by
 DAZE Dashboard.
-
-
 
 ## ✅ Stable 1.0
 
@@ -187,7 +181,6 @@ Session statistics include:
 
 The live timer and average are panel-session values and are not yet persistent
 across browser reloads.
-
 
 ## ✨ Current features
 
