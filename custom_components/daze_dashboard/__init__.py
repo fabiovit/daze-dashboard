@@ -11,7 +11,6 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .api import async_register_websocket_api
-
 from .const import (
     DOMAIN,
     FRONTEND_FILE,
@@ -23,21 +22,12 @@ from .const import (
 )
 
 
-
-
-async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    """Set up DAZE Dashboard."""
-    if not hass.data.get(f"{DOMAIN}_websocket_registered"):
-        async_register_websocket_api(hass)
-        hass.data[f"{DOMAIN}_websocket_registered"] = True
-    return True
-
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up DAZE Dashboard from a config entry."""
     if not hass.data.get(f"{DOMAIN}_websocket_registered"):
         async_register_websocket_api(hass)
         hass.data[f"{DOMAIN}_websocket_registered"] = True
+
     frontend_dir = Path(__file__).parent / "frontend"
 
     if not hass.data.get(f"{DOMAIN}_static_registered"):
