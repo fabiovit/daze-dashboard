@@ -1,9 +1,6 @@
 {
   "domain": "daze_dashboard",
   "name": "DAZE Dashboard",
-  "version": "1.1.0",
-  "documentation": "https://github.com/fabiovit/daze-dashboard",
-  "issue_tracker": "https://github.com/fabiovit/daze-dashboard/issues",
   "codeowners": [
     "@fabiovit"
   ],
@@ -13,7 +10,10 @@
     "http",
     "panel_custom"
   ],
+  "documentation": "https://github.com/fabiovit/daze-dashboard",
+  "integration_type": "service",
   "iot_class": "calculated",
+  "issue_tracker": "https://github.com/fabiovit/daze-dashboard/issues",
   "single_config_entry": true,
-  "integration_type": "service"
+  "version": "1.1.0"
 }
