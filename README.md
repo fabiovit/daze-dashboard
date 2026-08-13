@@ -3,6 +3,8 @@
 A modern sidebar dashboard for DAZE EV chargers in Home Assistant.
 
 [![GitHub release](https://img.shields.io/github/v/release/fabiovit/daze-dashboard)](https://github.com/fabiovit/daze-dashboard/releases)
+[![HACS Validation](https://github.com/fabiovit/daze-dashboard/actions/workflows/validate.yml/badge.svg)](https://github.com/fabiovit/daze-dashboard/actions/workflows/validate.yml)
+[![Hassfest](https://github.com/fabiovit/daze-dashboard/actions/workflows/hassfest.yml/badge.svg)](https://github.com/fabiovit/daze-dashboard/actions/workflows/hassfest.yml)
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom%20Repository-41BDF5.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=fabiovit&repository=daze-dashboard&category=integration)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.8%2B-41BDF5.svg)](https://www.home-assistant.io/)
 [![License](https://img.shields.io/github/license/fabiovit/daze-dashboard)](https://github.com/fabiovit/daze-dashboard/blob/main/LICENSE)
