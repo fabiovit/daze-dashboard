@@ -11,6 +11,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .api import async_register_websocket_api
+
 from .const import (
     DOMAIN,
     FRONTEND_FILE,
@@ -27,7 +28,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not hass.data.get(f"{DOMAIN}_websocket_registered"):
         async_register_websocket_api(hass)
         hass.data[f"{DOMAIN}_websocket_registered"] = True
-
     frontend_dir = Path(__file__).parent / "frontend"
 
     if not hass.data.get(f"{DOMAIN}_static_registered"):
@@ -49,9 +49,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             webcomponent_name=PANEL_COMPONENT,
             sidebar_title=PANEL_TITLE,
             sidebar_icon=PANEL_ICON,
-            module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=1.1.0",
+            module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=1.1.1",
             require_admin=False,
-            config={"version": "1.1.0"},
+            config={"version": "1.1.1"},
         )
         hass.data[f"{DOMAIN}_panel_registered"] = True
 

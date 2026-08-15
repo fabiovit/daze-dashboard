@@ -124,6 +124,45 @@ class DazeDashboardPanel extends HTMLElement {
     });
   }
 
+  _valueUnit(value, unit) {
+    if (value === "—" || value === null || value === undefined) return "—";
+    return `<span class="value-number">${value}</span><span class="value-unit">${unit}</span>`;
+  }
+
+  _chargingPowerHtml() {
+    return this._valueUnit(this._power(), "kW");
+  }
+
+  _sessionEnergyHtml() {
+    const raw = this._state("session_energy", null);
+    if (raw === null) return "—";
+    const n = Number(raw);
+    if (!Number.isFinite(n)) return `${raw}`;
+    const value = n.toLocaleString("it-IT", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    return this._valueUnit(value, "kWh");
+  }
+
+  _powerFromCurrent(currentKey) {
+    const current = Number(this._state(currentKey, "NaN"));
+    const voltage = Number(this._state("voltage_l1", "NaN"));
+    if (!Number.isFinite(current) || !Number.isFinite(voltage)) return "—";
+    return ((current * voltage) / 1000).toLocaleString("it-IT", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+
+  _limitPowerHtml() {
+    return this._valueUnit(this._powerFromCurrent("max_charging_current"), "kW");
+  }
+
+  _gridPowerHtml() {
+    return this._valueUnit(this._powerFromCurrent("grid_current_l1"), "kW");
+  }
+
   _isCharging() {
     const watts = this._watts();
     return Number.isFinite(watts) && watts > 300;
@@ -274,6 +313,19 @@ class DazeDashboardPanel extends HTMLElement {
     `;
   }
 
+  _metricDetail(icon, label, value, detail, extraClass = "") {
+    return `
+      <div class="metric metric-detail ${extraClass}">
+        <div class="metric-icon"><ha-icon icon="${icon}"></ha-icon></div>
+        <div class="metric-content">
+          <div class="metric-label">${label}</div>
+          <div class="metric-value">${value}</div>
+          <div class="metric-detail-line">${detail}</div>
+        </div>
+      </div>
+    `;
+  }
+
   _diagRow(icon, label, value, status, tone = "neutral", pct = null) {
     return `
       <div class="diag-row">
@@ -410,7 +462,7 @@ class DazeDashboardPanel extends HTMLElement {
         <section class="session-grid">
           <div class="session-card primary-stat">
             <div class="feature-label">Energia sessione</div>
-            <div class="feature-value">${this._number("session_energy", 2, " kWh")}</div>
+            <div class="feature-value">${this._sessionEnergyHtml()}</div>
             <div class="feature-caption">${charging ? "Sessione attiva" : "Sessione corrente / ultima lettura"}</div>
           </div>
           <div class="session-card">
@@ -448,14 +500,19 @@ class DazeDashboardPanel extends HTMLElement {
           <div class="feature-caption">Stato operativo della presa</div>
         </div>
         <div class="feature-card">
-          <div class="feature-label">Corrente</div>
-          <div class="feature-value">${this._number("charging_current_l1", 1, " A")}</div>
-          <div class="feature-caption">Limite ${this._number("max_charging_current", 1, " A")}</div>
+          <div class="feature-label">Potenza ricarica</div>
+          <div class="feature-value">${this._chargingPowerHtml()}</div>
+          <div class="feature-caption">
+            ${this._number("charging_current_l1", 1, " A")} ·
+            ${this._number("voltage_l1", 0, " V")}
+          </div>
         </div>
         <div class="feature-card">
-          <div class="feature-label">Tensione</div>
-          <div class="feature-value">${this._number("voltage_l1", 0, " V")}</div>
-          <div class="feature-caption">Linea L1</div>
+          <div class="feature-label">Limite ricarica</div>
+          <div class="feature-value">${this._limitPowerHtml()}</div>
+          <div class="feature-caption">
+            ${this._number("max_charging_current", 1, " A")} · Limite DAZE
+          </div>
         </div>
       </section>
 
@@ -465,9 +522,24 @@ class DazeDashboardPanel extends HTMLElement {
           Elettrico
         </div>
         <div class="metrics">
-          ${this._metric("mdi:flash", "Potenza", this._number("power", 0, " W"))}
-          ${this._metric("mdi:transmission-tower", "Corrente rete L1", this._number("grid_current_l1", 1, " A"))}
-          ${this._metric("mdi:current-ac", "Corrente massima", this._number("max_charging_current", 1, " A"))}
+          ${this._metricDetail(
+            "mdi:flash",
+            "Potenza ricarica",
+            this._chargingPowerHtml(),
+            `${this._number("charging_current_l1", 1, " A")} · ${this._number("voltage_l1", 0, " V")}`
+          )}
+          ${this._metricDetail(
+            "mdi:transmission-tower",
+            "Carico contatore",
+            this._gridPowerHtml(),
+            `${this._number("grid_current_l1", 1, " A")} · ${this._number("voltage_l1", 0, " V")}`
+          )}
+          ${this._metricDetail(
+            "mdi:speedometer",
+            "Limite ricarica",
+            this._limitPowerHtml(),
+            `${this._number("max_charging_current", 1, " A")} · Limite DAZE`
+          )}
           ${this._metric("mdi:alert-circle-outline", "Errore sistema", error.text, error.tone)}
         </div>
       </section>
@@ -585,12 +657,12 @@ class DazeDashboardPanel extends HTMLElement {
         
         
         .session-grid{display:grid;grid-template-columns:1.45fr repeat(3,1fr);gap:14px;margin-top:18px}.session-card,.feature-card{min-width:0;border-radius:22px;padding:20px;border:1px solid var(--divider-color);background:var(--card-background-color)}.primary-stat{background:radial-gradient(circle at 90% 10%,color-mix(in srgb,var(--daze-accent) 14%,transparent),transparent 45%),var(--card-background-color)}
-        .feature-value{font-size:clamp(28px,4vw,44px);font-weight:900;letter-spacing:-.04em;margin-top:8px}.feature-value.medium{font-size:30px}.feature-value.small{font-size:26px}.feature-caption{margin-top:8px;font-size:12px;opacity:.54;font-weight:650}
+        .feature-value{font-size:clamp(28px,4vw,44px);font-weight:900;letter-spacing:-.04em;margin-top:8px;line-height:1}.feature-value.medium{font-size:30px}.feature-value.small{font-size:26px}.feature-caption{margin-top:8px;font-size:12px;opacity:.54;font-weight:650}.value-number{font:inherit;font-weight:inherit;letter-spacing:inherit}.value-unit{font-size:.48em;font-weight:850;letter-spacing:-.01em;margin-left:.18em;opacity:.72;vertical-align:baseline}
         .overview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
         .section{margin-top:18px;background:var(--card-background-color);border:1px solid var(--divider-color);border-radius:24px;padding:20px}.section.compact{max-width:720px}.section-title{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:850;margin-bottom:16px}
         .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.metric{min-width:0;padding:14px;border-radius:18px;background:var(--secondary-background-color);display:flex;gap:12px;align-items:center}
         .metric-icon,.diag-icon{width:42px;height:42px;flex:0 0 42px;border-radius:14px;display:grid;place-items:center;color:var(--daze-accent);background:color-mix(in srgb,var(--daze-accent) 12%,transparent)}
-        .metric-content{min-width:0}.metric-value,.diag-value{margin-top:4px;font-size:18px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .metric-content{min-width:0}.metric-value,.diag-value{margin-top:4px;font-size:20px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.metric-value .value-unit{font-size:.52em}.metric-detail-line{margin-top:4px;font-size:10px;line-height:1.25;color:var(--secondary-text-color);white-space:normal}
         .metric.ok .metric-icon{color:#43a047}.metric.bad .metric-icon{color:#ef5350}.metric.neutral .metric-icon{color:#8b8b8b}
         .chart-section{overflow:hidden}.chart-svg{display:block;width:100%;height:230px}.chart-axis{stroke:var(--divider-color);stroke-width:2}.chart-line{fill:none;stroke:var(--daze-accent);stroke-width:4;vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round}.chart-dot{fill:var(--daze-accent)}.chart-legend{display:flex;justify-content:space-between;gap:12px;margin-top:7px;font-size:12px;opacity:.62}.chart-empty{height:180px;display:grid;place-items:center;opacity:.55}
         .diag-list{display:grid;gap:10px}.diag-row{display:flex;align-items:center;gap:14px;padding:14px;border-radius:18px;background:var(--secondary-background-color)}.diag-main{min-width:0;flex:1}.diag-status{padding:6px 10px;border-radius:999px;font-size:11px;font-weight:850;background:var(--card-background-color)}.diag-status.ok{color:#22c55e}.diag-status.warn{color:#f59e0b}.diag-status.bad{color:#ef4444}.diag-status.neutral{color:var(--secondary-text-color)}
@@ -685,7 +757,7 @@ ${this._data.available ? (
               : this._renderOverview(evse,error,charging)
         ) : `<div class="notice">Nessuna entità compatibile con ha-daze è stata rilevata. Installa e configura prima l'integrazione ha-daze.</div>`}
 
-        <div class="footer"><span>DAZE Dashboard</span><span>·</span><span>v1.1.0</span><span>·</span><span>Powered by ha-daze</span></div>
+        <div class="footer"><span>DAZE Dashboard</span><span>·</span><span>v1.1.1</span><span>·</span><span>Powered by ha-daze</span></div>
         </main>
       </div>
     `;

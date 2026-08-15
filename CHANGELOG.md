@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.1 — Energy & Current Hierarchy
+
+- Aligned DAZE electrical metrics with the Casa/Inverter visual hierarchy.
+- Charging power is now the main large value in kW.
+- Grid load is calculated from DAZE grid current × L1 voltage and shown as the main value in kW.
+- Charging current and grid current remain visible as smaller contextual values in A.
+- Charging limit is shown as calculated kW with the configured DAZE current limit in A underneath.
+- Session energy remains the main large value in kWh, with the unit visually reduced.
+- Kept HACS Validate and Hassfest workflows in the release package.
+- Preserved all ha-daze credits, references and backend compatibility.
+
 ## 1.1.0 — DOMOTICA UI Alignment
 
 - Reworked DAZE Dashboard using the current Casa/Inverter Dashboard geometry as the DOMOTICA visual master.

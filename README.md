@@ -1,14 +1,15 @@
 # ⚡ DAZE Dashboard
 
 [![release](https://img.shields.io/github/v/release/fabiovit/daze-dashboard?label=release)](https://github.com/fabiovit/daze-dashboard/releases)
-[![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5)](https://my.home-assistant.io/redirect/hacs_repository/?owner=fabiovit&repository=daze-dashboard&category=integration)
+[![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=fabiovit&repository=daze-dashboard&category=integration)
 [![Validate](https://github.com/fabiovit/daze-dashboard/actions/workflows/validate.yml/badge.svg)](https://github.com/fabiovit/daze-dashboard/actions/workflows/validate.yml)
 [![Hassfest](https://github.com/fabiovit/daze-dashboard/actions/workflows/hassfest.yml/badge.svg)](https://github.com/fabiovit/daze-dashboard/actions/workflows/hassfest.yml)
 [![license](https://img.shields.io/github/license/fabiovit/daze-dashboard?label=license)](https://github.com/fabiovit/daze-dashboard/blob/main/LICENSE)
 
 A modern sidebar dashboard for DAZE EV chargers in Home Assistant.
 
-> **Stable release:** v1.1.0
+
+> **Stable release:** v1.1.1
 
 DAZE Dashboard is an **independent companion project** for the excellent
 [`ha-daze`](https://github.com/rdndnl/ha-daze) Home Assistant integration.
@@ -102,6 +103,7 @@ Restart Home Assistant, then add **DAZE Dashboard** from:
 Settings → Devices & services → Add integration
 ```
 
+
 ## 🔐 Privacy and entity discovery
 
 DAZE Dashboard does not ship with personal Home Assistant entity IDs.
@@ -111,6 +113,8 @@ and the common charger entity prefix exposed by `ha-daze`.
 
 Names of homes, rooms, wallboxes, serial numbers, vehicles, people and custom
 helpers are not hardcoded in the public project.
+
+
 
 ## 🧠 Backend architecture
 
@@ -138,6 +142,8 @@ DAZE Dashboard frontend
 Relevant wallbox state changes are pushed to the panel through a custom
 Home Assistant WebSocket subscription. No polling of the DAZE cloud is added by
 DAZE Dashboard.
+
+
 
 ## ✅ Stable 1.0
 
@@ -181,6 +187,7 @@ Session statistics include:
 
 The live timer and average are panel-session values and are not yet persistent
 across browser reloads.
+
 
 ## ✨ Current features
 
