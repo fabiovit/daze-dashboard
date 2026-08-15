@@ -2,7 +2,7 @@
 
 DOMAIN = "daze_dashboard"
 NAME = "DAZE Dashboard"
-VERSION = "1.1.1"
+VERSION = "1.1.2"
 
 PANEL_URL = "daze-dashboard"
 PANEL_TITLE = "DAZE"

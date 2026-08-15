@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.2 — Dynamic Version Fix
+
+- Fixed the version badge in the DAZE Dashboard header.
+- The displayed dashboard version is now read dynamically from the Home Assistant panel configuration.
+- Fixed the footer version in the same way.
+- Future releases no longer require a separate hardcoded frontend version edit.
+- Preserved the v1.1.1 electrical metric hierarchy and all ha-daze compatibility.
+
 ## 1.1.1 — Energy & Current Hierarchy
 
 - Aligned DAZE electrical metrics with the Casa/Inverter visual hierarchy.

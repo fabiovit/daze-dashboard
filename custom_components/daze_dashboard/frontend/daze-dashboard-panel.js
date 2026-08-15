@@ -72,6 +72,10 @@ class DazeDashboardPanel extends HTMLElement {
     }
   }
 
+  _dashboardVersion() {
+    return this._panel?.config?.version || "1.1.2";
+  }
+
   _options() {
     return {
       show_chart: this._data?.options?.show_chart !== false,
@@ -714,7 +718,7 @@ class DazeDashboardPanel extends HTMLElement {
               <div class="brand">
                 <div class="brand-line">
                   <div class="brand-title">DAZE Dashboard</div>
-                  <span class="version-badge">1.1.0</span>
+                  <span class="version-badge">${this._dashboardVersion()}</span>
                 </div>
                 <div class="brand-subtitle">Wallbox · Charge Center</div>
               </div>
@@ -757,7 +761,7 @@ ${this._data.available ? (
               : this._renderOverview(evse,error,charging)
         ) : `<div class="notice">Nessuna entità compatibile con ha-daze è stata rilevata. Installa e configura prima l'integrazione ha-daze.</div>`}
 
-        <div class="footer"><span>DAZE Dashboard</span><span>·</span><span>v1.1.1</span><span>·</span><span>Powered by ha-daze</span></div>
+        <div class="footer"><span>DAZE Dashboard</span><span>·</span><span>v${this._dashboardVersion()}</span><span>·</span><span>Powered by ha-daze</span></div>
         </main>
       </div>
     `;
