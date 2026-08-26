@@ -7,9 +7,8 @@ from dataclasses import dataclass
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
-DAZE_PLATFORM = "daze"
+from .const import DAZE_PLATFORM
 
-# Stable keys currently exposed by ha-daze in entity unique_ids.
 SOCKET_KEYS = (
     "power",
     "session_energy",
@@ -38,73 +37,73 @@ EVSE_KEYS = (
 )
 
 NETWORK_KEYS = ("tariff",)
-
 ALL_KEYS = SOCKET_KEYS + EVSE_KEYS + NETWORK_KEYS
+GLOBAL_KEYS = EVSE_KEYS + NETWORK_KEYS
 
 
 @dataclass(slots=True)
 class DazeEntityMap:
-    """Logical DAZE fields mapped to Home Assistant entity_ids."""
+    """Logical DAZE fields mapped to Home Assistant entity ids."""
 
     entities: dict[str, str]
 
     @property
     def entity_ids(self) -> list[str]:
-        """Return the discovered Home Assistant entity ids."""
+        """Return unique discovered Home Assistant entity ids."""
         return list(dict.fromkeys(self.entities.values()))
 
 
 def _key_from_unique_id(unique_id: str) -> str | None:
-    """Extract a known ha-daze key from an entity unique_id."""
+    """Extract a known ha-daze logical key from an entity unique id."""
     for key in sorted(ALL_KEYS, key=len, reverse=True):
         if unique_id == key or unique_id.endswith(f"_{key}"):
             return key
     return None
 
 
+def _socket_base(unique_id: str, key: str) -> str:
+    """Return the socket/device prefix associated with a logical key."""
+    suffix = f"_{key}"
+    return unique_id[: -len(suffix)] if unique_id.endswith(suffix) else unique_id
+
+
+def _group_score(item: tuple[str, dict[str, str]]) -> tuple[int, int]:
+    """Score a candidate socket group for automatic selection."""
+    _, mapping = item
+    preferred = int("evse_state" in mapping) + int("power" in mapping)
+    return preferred, len(mapping)
+
+
 def discover_daze_entities(hass: HomeAssistant) -> DazeEntityMap:
-    """Discover ha-daze entities using the entity registry, not entity_id names."""
+    """Discover ha-daze entities without relying on user-defined entity ids."""
     registry = er.async_get(hass)
+    daze_entries = [
+        entry for entry in registry.entities.values() if entry.platform == DAZE_PLATFORM
+    ]
 
     grouped: dict[str, dict[str, str]] = {}
+    global_matches: dict[str, list[str]] = {key: [] for key in GLOBAL_KEYS}
 
-    for entry in registry.entities.values():
-        if entry.platform != DAZE_PLATFORM:
-            continue
-
+    for entry in daze_entries:
         key = _key_from_unique_id(entry.unique_id)
         if key is None:
             continue
 
-        # Socket entities use "<socket_id>_<key>" unique ids. Grouping by the
-        # prefix lets us select a coherent socket if multiple wallboxes/sockets
-        # exist, without relying on user-defined entity names.
-        suffix = f"_{key}"
-        base = entry.unique_id[:-len(suffix)] if entry.unique_id.endswith(suffix) else entry.unique_id
+        base = _socket_base(entry.unique_id, key)
         grouped.setdefault(base, {})[key] = entry.entity_id
+
+        if key in global_matches:
+            global_matches[key].append(entry.entity_id)
 
     if not grouped:
         return DazeEntityMap({})
 
-    # Prefer the group that contains an EVSE state and power sensor, then the
-    # one with the most known telemetry fields.
-    def score(item: tuple[str, dict[str, str]]) -> tuple[int, int]:
-        _, mapping = item
-        preferred = int("evse_state" in mapping) + int("power" in mapping)
-        return preferred, len(mapping)
-
-    primary_base, primary = max(grouped.items(), key=score)
+    primary = max(grouped.items(), key=_group_score)[1]
     result = dict(primary)
 
-    # EVSE- and network-level diagnostics have different unique-id prefixes.
-    # Add them globally if there is exactly one matching entity for the field.
-    for key in EVSE_KEYS + NETWORK_KEYS:
-        matches: list[str] = []
-        for entry in registry.entities.values():
-            if entry.platform != DAZE_PLATFORM:
-                continue
-            if _key_from_unique_id(entry.unique_id) == key:
-                matches.append(entry.entity_id)
+    # EVSE/network diagnostics can use a different unique-id prefix.
+    # Attach them only when the match is unambiguous.
+    for key, matches in global_matches.items():
         if len(matches) == 1:
             result[key] = matches[0]
 

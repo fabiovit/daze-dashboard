@@ -1,175 +1,32 @@
 # Changelog
 
-## 1.1.2 — Dynamic Version Fix
+## 2.0.0 — Stable codebase refresh
 
-- Fixed the version badge in the DAZE Dashboard header.
-- The displayed dashboard version is now read dynamically from the Home Assistant panel configuration.
-- Fixed the footer version in the same way.
-- Future releases no longer require a separate hardcoded frontend version edit.
-- Preserved the v1.1.1 electrical metric hierarchy and all ha-daze compatibility.
+DAZE Dashboard 2.0 consolidates the stable 1.x work into a cleaner baseline.
 
-## 1.1.1 — Energy & Current Hierarchy
+### Code
 
-- Aligned DAZE electrical metrics with the Casa/Inverter visual hierarchy.
-- Charging power is now the main large value in kW.
-- Grid load is calculated from DAZE grid current × L1 voltage and shown as the main value in kW.
-- Charging current and grid current remain visible as smaller contextual values in A.
-- Charging limit is shown as calculated kW with the configured DAZE current limit in A underneath.
-- Session energy remains the main large value in kWh, with the unit visually reduced.
-- Kept HACS Validate and Hassfest workflows in the release package.
-- Preserved all ha-daze credits, references and backend compatibility.
+- Centralized runtime version handling through `VERSION`.
+- Removed hard-coded panel/frontend version strings from backend registration.
+- Centralized the `ha-daze` platform constant.
+- Simplified Config Flow entity detection.
+- Refactored entity discovery to scan the registry once.
+- Removed unused discovery variables and duplicate lookup passes.
+- Cleaned backend formatting and internal registration helpers.
+- Kept privacy-safe entity discovery and WebSocket architecture unchanged.
 
-## 1.1.0 — DOMOTICA UI Alignment
+### Interface
 
-- Reworked DAZE Dashboard using the current Casa/Inverter Dashboard geometry as the DOMOTICA visual master.
-- Added the shared sticky application header with icon, app name, version badge and subtitle.
-- Home Assistant hamburger menu is shown only on mobile.
-- Replaced the old pill navigation with the Casa/Inverter minimal icon + text navigation and active underline.
-- Added stable horizontal touch scrolling and first-tap navigation behavior on mobile.
-- Desktop content now uses the same full-width 1480 px shell and 22 px content margins as the updated Inverter Dashboard.
-- Mobile content uses the shared compact 10 px shell geometry.
-- Preserved all DAZE telemetry, WebSocket discovery, privacy handling, live graph and session intelligence.
+- Preserved the Casa/Inverter-aligned responsive shell.
+- Preserved the mobile-only Home Assistant menu.
+- Preserved the large kW/kWh and secondary A metric hierarchy.
+- Version badge and footer continue to use panel configuration dynamically.
 
-## 1.0.4 — Integrated Mobile Header
+### Repository
 
-- Reworked mobile navigation to match the visual pattern used by PawBook.
-- The Home Assistant hamburger menu (☰) now lives inside a dedicated mobile header.
-- Added a compact DAZE brand block with icon, title and subtitle beside the menu.
-- The charging hero now starts below the mobile header and uses the full available width.
-- The mobile header is completely hidden on desktop/tablet layouts.
-- Uses Home Assistant's native `hass-toggle-menu` event.
-- No changes to entity discovery, WebSocket API, privacy handling or DAZE telemetry.
+- Simplified README and FAQ around the current stable architecture.
+- Retained HACS Validate and Hassfest workflows.
+- Updated checkout action used by Hassfest.
+- Preserved all `ha-daze` references and credits.
 
-## 1.0.3 — Mobile Menu Fix
-
-- Home Assistant hamburger menu (☰) is now shown only on mobile.
-- Desktop and tablet layouts no longer display the extra menu button.
-- Mobile keeps the native `hass-toggle-menu` behavior.
-- Restored full-width DAZE hero alignment on larger screens.
-- No changes to entity discovery, WebSocket API, privacy handling or telemetry.
-
-## 1.0.2 — Recovery + Home Assistant Menu
-
-- Rebuilt from the known-working v1.0.0 stable package.
-- Added the Home Assistant hamburger menu (☰) beside the DAZE hero.
-- Uses Home Assistant's native `hass-toggle-menu` event.
-- Restored and verified the canonical HACS repository structure.
-- No changes to entity discovery, WebSocket API, config flow, privacy handling or DAZE telemetry.
-
-## 1.0.0 — First Stable Release
-
-- First stable DAZE Dashboard release.
-- Added setup wizard with ha-daze detection and DAZE entity count.
-- Added single-config-entry protection.
-- Updated options handling to Home Assistant `OptionsFlowWithReload`.
-- Added local integration icon and logo.
-- Added FAQ documentation.
-- Preserved privacy-safe entity-registry discovery and WebSocket architecture.
-- Preserved live graph, session statistics, diagnostics and UI themes.
-- No personal entity IDs, SSID values or wallbox serials are hardcoded or displayed.
-
-## 0.7.0
-
-### Live graph, session intelligence and UI configuration
-
-- Added a native SVG live power graph with a rolling five-minute window.
-- Added lightweight browser-side power samples every five seconds.
-- Added session statistics: energy, live elapsed time, live average power and estimated cost.
-- Estimated cost uses DAZE session energy multiplied by the available DAZE energy tariff.
-- Added visual temperature bars to smart diagnostics.
-- Added Home Assistant Options Flow: no YAML is required for dashboard preferences.
-- Users can enable/disable the chart, session statistics and diagnostics view.
-- Added Auto, Dark and Light panel theme preferences.
-- Added `single_config_entry` manifest support.
-- Dashboard options are delivered to the frontend through the existing privacy-safe WebSocket payload.
-- No additional DAZE cloud polling and no persistent history database are introduced.
-
-## 0.6.0
-
-### Live experience
-
-- Added three panel views: Panoramica, Diagnostica and Informazioni.
-- Redesigned the hero with a larger live power display and explicit `kW` unit.
-- Added dynamic accent colors based on charging/connected/idle/error state.
-- Added a subtle charging pulse animation.
-- Added session energy directly to the hero.
-- Added a live elapsed timer while charging and while the panel remains open.
-- Added smart temperature diagnostics with OK / Elevated / Critical states.
-- Added compact system, fan and Wi-Fi diagnostics.
-- Added a more useful overview hierarchy with a larger session-energy card.
-- Preserved backend WebSocket architecture and privacy-safe entity discovery.
-- No personal entity IDs, SSID values or wallbox serials are displayed.
-
-## 0.5.0
-
-### Backend discovery and live WebSocket data
-
-- Moved DAZE entity discovery from the JavaScript frontend to the Python backend.
-- Discovery now uses Home Assistant's entity registry and `ha-daze` platform metadata.
-- Logical fields are identified through stable `ha-daze` entity `unique_id` keys.
-- Added `entity_map.py` for backend entity discovery.
-- Added `api.py` with a dedicated `daze_dashboard/subscribe` WebSocket command.
-- Relevant DAZE state changes are pushed live to the panel.
-- The frontend now renders logical DAZE values and no longer searches Home Assistant entity IDs.
-- No additional DAZE cloud polling is introduced.
-- Preserved privacy-safe UI behavior: no SSID, serial, room/home name or personal entity ID is displayed.
-
-## 0.4.0
-
-### Live dashboard refinement
-
-- Redesigned the charging hero with larger live power display.
-- Added a dynamic power bar based on wallbox power, maximum current and voltage.
-- Added human-friendly EVSE status labels such as `In attesa`, `In carica` and `Auto collegata`.
-- Removed the detected wallbox prefix/serial from the visible UI.
-- Wi-Fi now shows connection availability instead of exposing the SSID.
-- Simplified diagnostic labels (`Case`, `Scheda`, `Ventola`, `Wi-Fi`).
-- Improved system error presentation.
-- Removed developer/privacy debug text from the footer.
-- Footer now shows only DAZE Dashboard version and `Powered by ha-daze`.
-- Kept generic runtime entity discovery and no personal entity IDs.
-
-## 0.3.0
-
-### Generic DAZE entity discovery
-
-- Added generic runtime discovery for the current `ha-daze` sensor set.
-- Added wallbox status, EVSE status, power, session energy, current, voltage and maximum current.
-- Added grid current, system error, fan state, case temperature and board temperature.
-- Added energy tariff, Wi-Fi SSID, firmware and software information.
-- Derives the common charger prefix from the EVSE entity instead of using a fixed wallbox name or serial.
-- Removed all user-specific entity IDs from the public frontend.
-- Removed dependencies on private vehicle, photovoltaic and helper entities.
-- Charging state is derived directly from DAZE wallbox power.
-- Added privacy/entity-discovery documentation.
-
-## 0.2.1
-
-### Hotfix
-
-- Fixed Home Assistant startup failure in `async_register_panel()`.
-- Removed unsupported `handle_safe_area` argument for compatibility with current Home Assistant panel registration API.
-- Bumped frontend cache/version marker to 0.2.1.
-
-## 0.2.0
-
-### Documentation and distribution
-
-- Added direct references to the `ha-daze` companion integration.
-- Added explicit project architecture and separation between `ha-daze` and DAZE Dashboard.
-- Added one-click My Home Assistant / HACS custom repository link.
-- Added manual HACS custom repository installation instructions.
-- Added GitHub, HACS, Home Assistant and license badges.
-- Corrected the repository owner and project links to `fabiovit/daze-dashboard`.
-- Added credits to `rdndnl/ha-daze`.
-- Added issue and support references.
-- Updated component version to 0.2.0.
-- No major functional dashboard changes in this release.
-
-## 0.1.0
-
-- Initial project structure.
-- Added Home Assistant config flow.
-- Added automatic sidebar panel.
-- Added first DAZE overview panel.
-- Added HACS metadata.
+Previous release history remains available in GitHub Releases.

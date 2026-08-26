@@ -12,6 +12,7 @@ from homeassistant.core import callback
 from homeassistant.helpers import entity_registry as er
 
 from .const import (
+    DAZE_PLATFORM,
     DEFAULT_SHOW_CHART,
     DEFAULT_SHOW_DIAGNOSTICS,
     DEFAULT_SHOW_SESSION_STATS,
@@ -23,7 +24,6 @@ from .const import (
     OPTION_THEME,
 )
 
-DAZE_PLATFORM = "daze"
 
 OPTIONS_SCHEMA = vol.Schema(
     {
@@ -49,10 +49,9 @@ class DazeDashboardConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._abort_if_unique_id_configured()
 
         registry = er.async_get(self.hass)
-        daze_entities = [
-            entry for entry in registry.entities.values()
-            if entry.platform == DAZE_PLATFORM
-        ]
+        daze_entity_count = sum(
+            entry.platform == DAZE_PLATFORM for entry in registry.entities.values()
+        )
 
         if user_input is not None:
             return self.async_create_entry(title="DAZE Dashboard", data={})
@@ -61,8 +60,8 @@ class DazeDashboardConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=None,
             description_placeholders={
-                "ha_daze_status": "Rilevato" if daze_entities else "Non rilevato",
-                "entity_count": str(len(daze_entities)),
+                "ha_daze_status": "Rilevato" if daze_entity_count else "Non rilevato",
+                "entity_count": str(daze_entity_count),
             },
         )
 

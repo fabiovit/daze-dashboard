@@ -1,16 +1,24 @@
-# FAQ
+# DAZE Dashboard FAQ
 
 ## Does DAZE Dashboard replace ha-daze?
-No. It is a companion interface. `ha-daze` remains responsible for DAZE communication.
 
-## Does it talk directly to the DAZE cloud?
-No. It reads data already available in Home Assistant.
+No. DAZE Dashboard is a presentation layer and requires `ha-daze` for DAZE wallbox
+data.
 
-## Do I need YAML?
-No. Setup and preferences are managed from the Home Assistant UI.
+## Does DAZE Dashboard contact the DAZE cloud directly?
 
-## Are personal entity IDs, SSIDs or serials displayed?
-No. DAZE Dashboard does not hardcode or display those values.
+No. It reads data already available inside Home Assistant.
 
-## Why does the live timer reset after reopening the panel?
-In 1.0.0, elapsed time and live-average power are intentionally browser-session statistics.
+## Does it contain personal entity IDs?
+
+No. Compatible entities are discovered from the Home Assistant entity registry using
+generic `ha-daze` unique-id keys.
+
+## Is YAML required?
+
+No. Installation and configuration use the Home Assistant UI.
+
+## Are live session statistics persistent?
+
+The live timer and live-average power are browser-panel session values. They reset
+when the panel is reloaded.

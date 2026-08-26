@@ -11,7 +11,6 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .api import async_register_websocket_api
-
 from .const import (
     DOMAIN,
     FRONTEND_FILE,
@@ -20,40 +19,58 @@ from .const import (
     PANEL_TITLE,
     PANEL_URL,
     STATIC_URL,
+    VERSION,
 )
+
+_DATA_WEBSOCKET_REGISTERED = f"{DOMAIN}_websocket_registered"
+_DATA_STATIC_REGISTERED = f"{DOMAIN}_static_registered"
+_DATA_PANEL_REGISTERED = f"{DOMAIN}_panel_registered"
+
+
+def _register_websocket_once(hass: HomeAssistant) -> None:
+    """Register the dashboard WebSocket API once per Home Assistant runtime."""
+    if hass.data.get(_DATA_WEBSOCKET_REGISTERED):
+        return
+
+    async_register_websocket_api(hass)
+    hass.data[_DATA_WEBSOCKET_REGISTERED] = True
+
+
+async def _register_frontend_once(hass: HomeAssistant) -> None:
+    """Register static frontend assets once per Home Assistant runtime."""
+    if hass.data.get(_DATA_STATIC_REGISTERED):
+        return
+
+    frontend_dir = Path(__file__).parent / "frontend"
+    await hass.http.async_register_static_paths(
+        [StaticPathConfig(STATIC_URL, str(frontend_dir), False)]
+    )
+    hass.data[_DATA_STATIC_REGISTERED] = True
+
+
+async def _register_panel_once(hass: HomeAssistant) -> None:
+    """Register the Home Assistant sidebar panel once."""
+    if hass.data.get(_DATA_PANEL_REGISTERED):
+        return
+
+    await async_register_panel(
+        hass,
+        frontend_url_path=PANEL_URL,
+        webcomponent_name=PANEL_COMPONENT,
+        sidebar_title=PANEL_TITLE,
+        sidebar_icon=PANEL_ICON,
+        module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v={VERSION}",
+        require_admin=False,
+        config={"version": VERSION},
+    )
+    hass.data[_DATA_PANEL_REGISTERED] = True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up DAZE Dashboard from a config entry."""
-    if not hass.data.get(f"{DOMAIN}_websocket_registered"):
-        async_register_websocket_api(hass)
-        hass.data[f"{DOMAIN}_websocket_registered"] = True
-    frontend_dir = Path(__file__).parent / "frontend"
-
-    if not hass.data.get(f"{DOMAIN}_static_registered"):
-        await hass.http.async_register_static_paths(
-            [
-                StaticPathConfig(
-                    STATIC_URL,
-                    str(frontend_dir),
-                    False,
-                )
-            ]
-        )
-        hass.data[f"{DOMAIN}_static_registered"] = True
-
-    if not hass.data.get(f"{DOMAIN}_panel_registered"):
-        await async_register_panel(
-            hass,
-            frontend_url_path=PANEL_URL,
-            webcomponent_name=PANEL_COMPONENT,
-            sidebar_title=PANEL_TITLE,
-            sidebar_icon=PANEL_ICON,
-            module_url=f"{STATIC_URL}/{FRONTEND_FILE}?v=1.1.2",
-            require_admin=False,
-            config={"version": "1.1.2"},
-        )
-        hass.data[f"{DOMAIN}_panel_registered"] = True
+    _register_websocket_once(hass)
+    await _register_frontend_once(hass)
+    await _register_panel_once(hass)
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {}
     return True
@@ -65,6 +82,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     if not hass.data.get(DOMAIN):
         frontend.async_remove_panel(hass, PANEL_URL, warn_if_unknown=False)
-        hass.data[f"{DOMAIN}_panel_registered"] = False
+        hass.data[_DATA_PANEL_REGISTERED] = False
 
     return True

@@ -73,7 +73,7 @@ class DazeDashboardPanel extends HTMLElement {
   }
 
   _dashboardVersion() {
-    return this._panel?.config?.version || "1.1.2";
+    return this._panel?.config?.version || "—";
   }
 
   _options() {

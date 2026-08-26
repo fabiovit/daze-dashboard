@@ -60,8 +60,12 @@ def _state_payload(hass: HomeAssistant, entity_map: DazeEntityMap) -> dict[str, 
         }
 
         if logical_key == "tariff":
-            values[logical_key]["currency_symbol"] = state.attributes.get("currency_symbol")
-            values[logical_key]["currency_code"] = state.attributes.get("currency_code")
+            values[logical_key]["currency_symbol"] = state.attributes.get(
+                "currency_symbol"
+            )
+            values[logical_key]["currency_code"] = state.attributes.get(
+                "currency_code"
+            )
 
     return {
         "available": bool(entity_map.entities),
