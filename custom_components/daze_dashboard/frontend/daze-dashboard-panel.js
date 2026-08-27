@@ -11,6 +11,7 @@ class DazeDashboardPanel extends HTMLElement {
     this._lastCharging = false;
     this._samples = [];
     this._lastSampleAt = 0;
+    this._language = localStorage.getItem("daze-dashboard-language") || "auto";
 
     this._timer = setInterval(() => {
       if (this._data) {
@@ -72,6 +73,89 @@ class DazeDashboardPanel extends HTMLElement {
     }
   }
 
+
+  _resolvedLanguage() {
+    if (this._language === "it" || this._language === "en") return this._language;
+    const language = this._hass?.locale?.language || this._hass?.language || navigator.language || "en";
+    return String(language).toLowerCase().startsWith("it") ? "it" : "en";
+  }
+
+  _locale() {
+    return this._resolvedLanguage() === "it" ? "it-IT" : "en-GB";
+  }
+
+  _tr(text) {
+    const translations = {
+      "Panoramica": "Overview",
+      "Diagnostica": "Diagnostics",
+      "Informazioni": "Information",
+      "Energia in tempo reale": "Real-time energy",
+      "Wallbox DAZE · aggiornamento live da Home Assistant": "DAZE wallbox · live updates from Home Assistant",
+      "Energia sessione": "Session energy",
+      "Durata": "Duration",
+      "Costo stimato": "Estimated cost",
+      "Potenza": "Power",
+      "del limite": "of limit",
+      "Ricarica attiva": "Charging",
+      "Auto collegata": "Vehicle connected",
+      "Non disponibile": "Unavailable",
+      "In attesa": "Waiting",
+      "In carica": "Charging",
+      "Carica completata": "Charge complete",
+      "Errore": "Error",
+      "Nessun errore": "No errors",
+      "Connesso": "Connected",
+      "Critica": "Critical",
+      "Elevata": "High",
+      "Potenza ricarica": "Charging power",
+      "Carico contatore": "Grid load",
+      "Limite ricarica": "Charging limit",
+      "Errore sistema": "System error",
+      "Temperatura case": "Case temperature",
+      "Temperatura scheda": "Board temperature",
+      "Ventola": "Fan",
+      "Wi-Fi": "Wi-Fi",
+      "Sistema": "System",
+      "Tariffa energetica": "Energy tariff",
+      "Firmware": "Firmware",
+      "Software": "Software",
+      "Integrazione": "Integration",
+      "Diagnostica intelligente": "Smart diagnostics",
+      "Informazioni DAZE": "DAZE information",
+      "Preferenze pannello": "Panel preferences",
+      "Grafico live": "Live chart",
+      "Statistiche sessione": "Session statistics",
+      "Tema": "Theme",
+      "Attivo": "Enabled",
+      "Disattivato": "Disabled",
+      "Attive": "Enabled",
+      "Disattivate": "Disabled",
+      "Attiva": "Enabled",
+      "Disattivata": "Disabled",
+      "Supporta DAZE Dashboard": "Support DAZE Dashboard",
+      "Offrimi un caffè": "Buy me a coffee",
+      "Se DAZE Dashboard ti piace e vuoi supportarne lo sviluppo, puoi offrirmi un caffè su Ko-fi.": "If you enjoy DAZE Dashboard and want to support its development, you can buy me a coffee on Ko-fi.",
+      "Modifica queste preferenze da Impostazioni → Dispositivi e servizi → DAZE Dashboard → Configura. Nessun YAML richiesto.": "Change these preferences from Settings → Devices & services → DAZE Dashboard → Configure. No YAML required."
+    };
+    return this._resolvedLanguage() === "it" ? text : (translations[text] || text);
+  }
+
+  _setLanguage(language) {
+    this._language = ["auto", "it", "en"].includes(language) ? language : "auto";
+    localStorage.setItem("daze-dashboard-language", this._language);
+    this._render();
+  }
+
+  _languageSelector() {
+    return `
+      <div class="language-selector" aria-label="Language">
+        <button class="${this._language === "auto" ? "active" : ""}" data-language="auto">Auto</button>
+        <button class="${this._language === "it" ? "active" : ""}" data-language="it">🇮🇹 IT</button>
+        <button class="${this._language === "en" ? "active" : ""}" data-language="en">🇬🇧 EN</button>
+      </div>
+    `;
+  }
+
   _dashboardVersion() {
     return this._panel?.config?.version || "—";
   }
@@ -112,7 +196,7 @@ class DazeDashboardPanel extends HTMLElement {
     const n = Number(raw);
     if (!Number.isFinite(n)) return `${raw}${suffix}`;
 
-    return `${n.toLocaleString("it-IT", {
+    return `${n.toLocaleString(this._locale(), {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     })}${suffix}`;
@@ -126,7 +210,7 @@ class DazeDashboardPanel extends HTMLElement {
   _power() {
     const watts = this._watts();
     if (!Number.isFinite(watts)) return "—";
-    return (watts / 1000).toLocaleString("it-IT", {
+    return (watts / 1000).toLocaleString(this._locale(), {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
@@ -146,7 +230,7 @@ class DazeDashboardPanel extends HTMLElement {
     if (raw === null) return "—";
     const n = Number(raw);
     if (!Number.isFinite(n)) return `${raw}`;
-    const value = n.toLocaleString("it-IT", {
+    const value = n.toLocaleString(this._locale(), {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
@@ -157,7 +241,7 @@ class DazeDashboardPanel extends HTMLElement {
     const current = Number(this._state(currentKey, "NaN"));
     const voltage = Number(this._state("voltage_l1", "NaN"));
     if (!Number.isFinite(current) || !Number.isFinite(voltage)) return "—";
-    return ((current * voltage) / 1000).toLocaleString("it-IT", {
+    return ((current * voltage) / 1000).toLocaleString(this._locale(), {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
@@ -192,15 +276,15 @@ class DazeDashboardPanel extends HTMLElement {
   }
 
   _humanStatus(value) {
-    if (!value || value === "—") return "Non disponibile";
+    if (!value || value === "—") return this._tr("Non disponibile");
     const s = String(value).trim();
     const l = s.toLowerCase();
 
-    if (["standby", "idle", "waiting", "in attesa"].includes(l)) return "In attesa";
-    if (l.includes("charg")) return "In carica";
-    if (l.includes("connected") || l.includes("colleg")) return "Auto collegata";
-    if (l.includes("complete") || l.includes("terminat") || l.includes("finished")) return "Carica completata";
-    if (l.includes("fault") || l.includes("error") || l.includes("errore")) return "Errore";
+    if (["standby", "idle", "waiting", "in attesa"].includes(l)) return this._tr("In attesa");
+    if (l.includes("charg")) return this._tr("In carica");
+    if (l.includes("connected") || l.includes("colleg")) return this._tr("Auto collegata");
+    if (l.includes("complete") || l.includes("terminat") || l.includes("finished")) return this._tr("Carica completata");
+    if (l.includes("fault") || l.includes("error") || l.includes("errore")) return this._tr("Errore");
 
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
@@ -236,10 +320,10 @@ class DazeDashboardPanel extends HTMLElement {
 
   _statusLabel() {
     const tone = this._statusTone();
-    if (tone === "charging") return "Ricarica attiva";
-    if (tone === "connected") return "Auto collegata";
-    if (tone === "offline") return "Non disponibile";
-    return "In attesa";
+    if (tone === "charging") return this._tr("Ricarica attiva");
+    if (tone === "connected") return this._tr("Auto collegata");
+    if (tone === "offline") return this._tr("Non disponibile");
+    return this._tr("In attesa");
   }
 
   _heroProgress() {
@@ -251,15 +335,15 @@ class DazeDashboardPanel extends HTMLElement {
     const raw = this._state("system_error", "—");
     const l = String(raw).toLowerCase();
 
-    if (raw === "—") return { text: "Non disponibile", tone: "neutral" };
+    if (raw === "—") return { text: this._tr("Non disponibile"), tone: "neutral" };
     if (l.includes("none") || l.includes("nessun") || l.includes("no error") || l === "ok") {
-      return { text: "Nessun errore", tone: "ok" };
+      return { text: this._tr("Nessun errore"), tone: "ok" };
     }
     return { text: raw, tone: "bad" };
   }
 
   _wifiText() {
-    return this._state("wifi_ssid", null) === null ? "Non disponibile" : "Connesso";
+    return this._state("wifi_ssid", null) === null ? this._tr("Non disponibile") : this._tr("Connesso");
   }
 
   _tariffNumber() {
@@ -276,7 +360,7 @@ class DazeDashboardPanel extends HTMLElement {
     if (!Number.isFinite(n)) return item.state ?? "—";
 
     const symbol = item.currency_symbol || item.currency_code || "";
-    return `${n.toLocaleString("it-IT", {
+    return `${n.toLocaleString(this._locale(), {
       minimumFractionDigits: 2,
       maximumFractionDigits: 4,
     })}${symbol ? ` ${symbol}` : ""}`;
@@ -288,7 +372,7 @@ class DazeDashboardPanel extends HTMLElement {
 
     if (!Number.isFinite(energy) || !Number.isFinite(tariff)) return "—";
 
-    return `${(energy * tariff).toLocaleString("it-IT", {
+    return `${(energy * tariff).toLocaleString(this._locale(), {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })} €`;
@@ -297,7 +381,7 @@ class DazeDashboardPanel extends HTMLElement {
   _liveAveragePower() {
     if (!this._samples.length) return "—";
     const avg = this._samples.reduce((sum, sample) => sum + sample.kw, 0) / this._samples.length;
-    return `${avg.toLocaleString("it-IT", {
+    return `${avg.toLocaleString(this._locale(), {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })} kW`;
@@ -328,9 +412,9 @@ class DazeDashboardPanel extends HTMLElement {
 
   _tempStatus(key, warn, critical) {
     const n = Number(this._state(key, "NaN"));
-    if (!Number.isFinite(n)) return { label: "Non disponibile", tone: "neutral", pct: 0 };
-    if (n >= critical) return { label: "Critica", tone: "bad", pct: 100 };
-    if (n >= warn) return { label: "Elevata", tone: "warn", pct: Math.min(100, n / critical * 100) };
+    if (!Number.isFinite(n)) return { label: this._tr("Non disponibile"), tone: "neutral", pct: 0 };
+    if (n >= critical) return { label: this._tr("Critica"), tone: "bad", pct: 100 };
+    if (n >= warn) return { label: this._tr("Elevata"), tone: "warn", pct: Math.min(100, n / critical * 100) };
     return { label: "OK", tone: "ok", pct: Math.min(100, n / critical * 100) };
   }
 
@@ -400,6 +484,10 @@ class DazeDashboardPanel extends HTMLElement {
     if (menuButton) {
       menuButton.addEventListener("click", () => this._toggleSidebar());
     }
+
+    this.shadowRoot.querySelectorAll("[data-language]").forEach((button) => {
+      button.addEventListener("click", () => this._setLanguage(button.dataset.language));
+    });
 
     this.shadowRoot.querySelectorAll(".nav .nav-button[data-view]").forEach((button) => {
       let touchStartX = 0;
@@ -482,7 +570,7 @@ class DazeDashboardPanel extends HTMLElement {
       </svg>
       <div class="chart-legend">
         <span>Ultimi 5 minuti · campione ogni 5 s</span>
-        <strong>${last.kw.toLocaleString("it-IT", {minimumFractionDigits:2, maximumFractionDigits:2})} kW</strong>
+        <strong>${last.kw.toLocaleString(this._locale(), {minimumFractionDigits:2, maximumFractionDigits:2})} kW</strong>
       </div>
     `;
   }
@@ -494,7 +582,7 @@ class DazeDashboardPanel extends HTMLElement {
       ${opts.show_session_stats ? `
         <section class="session-grid">
           <div class="session-card primary-stat">
-            <div class="feature-label">Energia sessione</div>
+            <div class="feature-label">${this._tr("Energia sessione")}</div>
             <div class="feature-value">${this._sessionEnergyHtml()}</div>
             <div class="feature-caption">${charging ? "Sessione attiva" : "Sessione corrente / ultima lettura"}</div>
           </div>
@@ -509,7 +597,7 @@ class DazeDashboardPanel extends HTMLElement {
             <div class="feature-caption">Media campioni del pannello</div>
           </div>
           <div class="session-card">
-            <div class="feature-label">Costo stimato</div>
+            <div class="feature-label">${this._tr("Costo stimato")}</div>
             <div class="feature-value medium">${this._estimatedCost()}</div>
             <div class="feature-caption">Energia sessione × tariffa DAZE</div>
           </div>
@@ -573,7 +661,7 @@ class DazeDashboardPanel extends HTMLElement {
             this._limitPowerHtml(),
             `${this._number("max_charging_current", 1, " A")} · Limite DAZE`
           )}
-          ${this._metric("mdi:alert-circle-outline", "Errore sistema", error.text, error.tone)}
+          ${this._metric("mdi:alert-circle-outline", this._tr("Errore sistema"), error.text, error.tone)}
         </div>
       </section>
     `;
@@ -643,25 +731,35 @@ class DazeDashboardPanel extends HTMLElement {
           Informazioni DAZE
         </div>
         <div class="metrics">
-          ${this._hasValue("tariff") ? this._metric("mdi:cash", "Tariffa energetica", this._tariff()) : ""}
-          ${this._hasValue("firmware_version") ? this._metric("mdi:chip", "Firmware", this._state("firmware_version")) : ""}
-          ${this._hasValue("software_version") ? this._metric("mdi:application-cog-outline", "Software", this._state("software_version")) : ""}
-          ${this._metric("mdi:shield-check-outline", "Integrazione", "ha-daze")}
+          ${this._hasValue("tariff") ? this._metric("mdi:cash", this._tr("Tariffa energetica"), this._tariff()) : ""}
+          ${this._hasValue("firmware_version") ? this._metric("mdi:chip", this._tr("Firmware"), this._state("firmware_version")) : ""}
+          ${this._hasValue("software_version") ? this._metric("mdi:application-cog-outline", this._tr("Software"), this._state("software_version")) : ""}
+          ${this._metric("mdi:shield-check-outline", this._tr("Integrazione"), "ha-daze")}
         </div>
+      </section>
+
+      <section class="section compact support-card">
+        <div class="section-title">
+          <ha-icon icon="mdi:coffee-outline"></ha-icon>
+          ${this._tr("Supporta DAZE Dashboard")}
+        </div>
+        <div class="project-note">${this._tr("Se DAZE Dashboard ti piace e vuoi supportarne lo sviluppo, puoi offrirmi un caffè su Ko-fi.")}</div>
+        <a class="support-link" href="https://ko-fi.com/fabvittori" target="_blank" rel="noopener noreferrer">
+          <ha-icon icon="mdi:coffee"></ha-icon>
+          ${this._tr("Offrimi un caffè")}
+        </a>
       </section>
 
       <section class="section compact">
         <div class="section-title">
           <ha-icon icon="mdi:tune-variant"></ha-icon>
-          Preferenze pannello
+          ${this._tr("Preferenze pannello")}
         </div>
-        <div class="project-line"><span>Grafico live</span><strong>${opts.show_chart ? "Attivo" : "Disattivato"}</strong></div>
-        <div class="project-line"><span>Statistiche sessione</span><strong>${opts.show_session_stats ? "Attive" : "Disattivate"}</strong></div>
-        <div class="project-line"><span>Diagnostica</span><strong>${opts.show_diagnostics ? "Attiva" : "Disattivata"}</strong></div>
-        <div class="project-line"><span>Tema</span><strong>${opts.theme}</strong></div>
-        <div class="project-note">
-          Modifica queste preferenze da Impostazioni → Dispositivi e servizi → DAZE Dashboard → Configura. Nessun YAML richiesto.
-        </div>
+        <div class="project-line"><span>${this._tr("Grafico live")}</span><strong>${opts.show_chart ? this._tr("Attivo") : this._tr("Disattivato")}</strong></div>
+        <div class="project-line"><span>${this._tr("Statistiche sessione")}</span><strong>${opts.show_session_stats ? this._tr("Attive") : this._tr("Disattivate")}</strong></div>
+        <div class="project-line"><span>${this._tr("Diagnostica")}</span><strong>${opts.show_diagnostics ? this._tr("Attiva") : this._tr("Disattivata")}</strong></div>
+        <div class="project-line"><span>${this._tr("Tema")}</span><strong>${opts.theme}</strong></div>
+        <div class="project-note">${this._tr("Modifica queste preferenze da Impostazioni → Dispositivi e servizi → DAZE Dashboard → Configura. Nessun YAML richiesto.")}</div>
       </section>
     `;
   }
@@ -719,8 +817,8 @@ class DazeDashboardPanel extends HTMLElement {
         .power-sub{margin-top:12px;opacity:.58;font-weight:700}.power-track{width:100%;height:8px;margin-top:18px;border-radius:999px;overflow:hidden;background:var(--secondary-background-color)}
         .power-fill{height:100%;width:${powerPercent}%;min-width:${charging ? "4%" : "0"};border-radius:inherit;background:linear-gradient(90deg,var(--daze-accent),#22c55e);transition:width .45s ease}
         .session-strip{display:flex;justify-content:flex-end;gap:20px;margin-top:16px}.session-item{text-align:right}.session-label,.feature-label,.metric-label,.diag-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;opacity:.5;font-weight:850}.session-value{margin-top:3px;font-size:16px;font-weight:850}
-        
-        
+
+
         .session-grid{display:grid;grid-template-columns:1.45fr repeat(3,1fr);gap:14px;margin-top:18px}.session-card,.feature-card{min-width:0;border-radius:22px;padding:20px;border:1px solid var(--divider-color);background:var(--card-background-color)}.primary-stat{background:radial-gradient(circle at 90% 10%,color-mix(in srgb,var(--daze-accent) 14%,transparent),transparent 45%),var(--card-background-color)}
         .feature-value{font-size:clamp(28px,4vw,44px);font-weight:900;letter-spacing:-.04em;margin-top:8px;line-height:1}.feature-value.medium{font-size:30px}.feature-value.small{font-size:26px}.feature-caption{margin-top:8px;font-size:12px;opacity:.54;font-weight:650}.value-number{font:inherit;font-weight:inherit;letter-spacing:inherit}.value-unit{font-size:.48em;font-weight:850;letter-spacing:-.01em;margin-left:.18em;opacity:.72;vertical-align:baseline}
         .overview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
@@ -733,8 +831,14 @@ class DazeDashboardPanel extends HTMLElement {
         .diag-list{display:grid;gap:10px}.diag-row{display:flex;align-items:center;gap:14px;padding:14px;border-radius:18px;background:var(--secondary-background-color)}.diag-main{min-width:0;flex:1}.diag-status{padding:6px 10px;border-radius:999px;font-size:11px;font-weight:850;background:var(--card-background-color)}.diag-status.ok{color:#22c55e}.diag-status.warn{color:#f59e0b}.diag-status.bad{color:#ef4444}.diag-status.neutral{color:var(--secondary-text-color)}
         .diag-track{height:5px;margin-top:9px;border-radius:999px;background:var(--card-background-color);overflow:hidden}.diag-fill{height:100%;border-radius:999px;background:#64748b}.diag-fill.ok{background:#22c55e}.diag-fill.warn{background:#f59e0b}.diag-fill.bad{background:#ef4444}
         .project-line{display:flex;justify-content:space-between;gap:18px;padding:11px 0;border-bottom:1px solid var(--divider-color)}.project-note{margin-top:14px;font-size:12px;opacity:.58;line-height:1.5}
-        .notice{margin-top:18px;border-radius:18px;padding:16px 18px;background:var(--secondary-background-color);opacity:.8}.footer{display:flex;justify-content:center;gap:8px;font-size:12px;opacity:.5;margin:18px 0 6px}
-        
+        .notice{margin-top:18px;border-radius:18px;padding:16px 18px;background:var(--secondary-background-color);opacity:.8}.footer a{color:inherit;text-decoration:none;font-weight:800}.footer a:hover{text-decoration:underline}.footer{display:flex;justify-content:center;gap:8px;font-size:12px;opacity:.5;margin:18px 0 6px}
+
+        .support-card{overflow:hidden}
+        .support-link{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:10px 13px;border-radius:12px;text-decoration:none;color:var(--primary-text-color);font-size:12px;font-weight:850;background:rgba(127,127,127,.09);border:1px solid rgba(127,127,127,.14)}
+        .support-link ha-icon{--mdc-icon-size:18px}
+        .language-selector{display:flex;align-items:center;gap:4px;margin:0 0 12px auto;padding:3px;border:1px solid rgba(127,127,127,.13);border-radius:12px;background:rgba(127,127,127,.055);width:max-content}
+        .language-selector button{border:0;background:transparent;color:var(--primary-text-color);font:inherit;font-size:10px;font-weight:800;padding:6px 8px;border-radius:9px;cursor:pointer;opacity:.52}
+        .language-selector button.active{background:rgba(127,127,127,.13);opacity:1}
         /* v2.1 dynamic visual refresh */
         .hero{position:relative;overflow:hidden;isolation:isolate}
         .hero-ambient{position:absolute;inset:-35% -10% auto auto;width:420px;height:420px;border-radius:50%;filter:blur(38px);opacity:.16;z-index:-1;background:radial-gradient(circle at 50% 50%,var(--primary-color),transparent 68%);pointer-events:none}
@@ -821,10 +925,11 @@ class DazeDashboardPanel extends HTMLElement {
             </div>
           </div>
           <div class="nav-scroller">
-            <nav class="nav">
-              ${this._navButton("overview", "mdi:view-dashboard-outline", "Panoramica")}
-              ${opts.show_diagnostics ? this._navButton("diagnostics", "mdi:stethoscope", "Diagnostica") : ""}
-              ${this._navButton("info", "mdi:information-outline", "Informazioni")}
+            ${this._languageSelector()}
+        <nav class="nav">
+              ${this._navButton("overview", "mdi:view-dashboard-outline", this._tr("Panoramica"))}
+              ${opts.show_diagnostics ? this._navButton("diagnostics", "mdi:stethoscope", this._tr("Diagnostica")) : ""}
+              ${this._navButton("info", "mdi:information-outline", this._tr("Informazioni"))}
             </nav>
           </div>
         </header>
@@ -840,19 +945,19 @@ class DazeDashboardPanel extends HTMLElement {
                 ${this._statusLabel()}
               </span>
             </div>
-            <div class="hero-title">Energia in tempo reale</div>
-            <div class="hero-subtitle">Wallbox DAZE · aggiornamento live da Home Assistant</div>
+            <div class="hero-title">${this._tr("Energia in tempo reale")}</div>
+            <div class="hero-subtitle">${this._tr("Wallbox DAZE · aggiornamento live da Home Assistant")}</div>
             <div class="hero-kpi-row">
               <div class="hero-kpi">
-                <div class="hero-kpi-label">Energia sessione</div>
+                <div class="hero-kpi-label">${this._tr("Energia sessione")}</div>
                 <div class="hero-kpi-value">${this._sessionEnergyHtml()}</div>
               </div>
               <div class="hero-kpi">
-                <div class="hero-kpi-label">Durata</div>
+                <div class="hero-kpi-label">${this._tr("Durata")}</div>
                 <div class="hero-kpi-value compact">${this._elapsed()}</div>
               </div>
               <div class="hero-kpi">
-                <div class="hero-kpi-label">Costo stimato</div>
+                <div class="hero-kpi-label">${this._tr("Costo stimato")}</div>
                 <div class="hero-kpi-value compact">${this._estimatedCost()}</div>
               </div>
             </div>
@@ -860,13 +965,13 @@ class DazeDashboardPanel extends HTMLElement {
           <div class="power-block">
             <div class="power-ring" style="--progress:${this._heroProgress()}">
               <div class="power-ring-inner">
-                <div class="power-label">Potenza</div>
+                <div class="power-label">${this._tr("Potenza")}</div>
                 <div class="power-number">${this._chargingPowerHtml()}</div>
                 <div class="power-caption">${this._number("charging_current_l1", 1, " A")} · ${this._number("voltage_l1", 0, " V")}</div>
               </div>
             </div>
             <div class="power-track"><div class="power-track-fill" style="width:${this._heroProgress()}%"></div></div>
-            <div class="power-track-labels"><span>0%</span><span>${Math.round(this._heroProgress())}% del limite</span><span>100%</span></div>
+            <div class="power-track-labels"><span>0%</span><span>${Math.round(this._heroProgress())}% ${this._tr("del limite")}</span><span>100%</span></div>
           </div>
         </div>
       </section>
@@ -878,7 +983,17 @@ ${this._data.available ? (
               : this._renderOverview(evse,error,charging)
         ) : `<div class="notice">Nessuna entità compatibile con ha-daze è stata rilevata. Installa e configura prima l'integrazione ha-daze.</div>`}
 
-        <div class="footer"><span>DAZE Dashboard</span><span>·</span><span>v${this._dashboardVersion()}</span><span>·</span><span>Powered by ha-daze</span></div>
+        <div class="footer">
+          <span>DAZE Dashboard v${this._dashboardVersion()}</span>
+          <span>·</span>
+          <span>by Fabio Vittori</span>
+          <span>·</span>
+          <a href="https://ko-fi.com/fabvittori" target="_blank" rel="noopener noreferrer">
+            ${this._tr("Offrimi un caffè")}
+          </a>
+          <span>·</span>
+          <span>Powered by <strong>ha-daze</strong></span>
+        </div>
         </main>
       </div>
     `;

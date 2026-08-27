@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.2.0 — Italian & English
+
+- Added automatic Italian/English localization.
+- Added Auto / IT / EN selector directly in the dashboard.
+- Translated Panel preferences.
+- Added an in-dashboard Ko-fi “Buy me a coffee” support card.
+- Added Italian README and FAQ alongside English documentation.
+- Preserved the v2.1 dynamic interface and adaptive diagnostics.
+
 ## 2.1.0 — Dynamic visual refresh
 
 - Redesigned the main charging hero with a live circular power indicator.

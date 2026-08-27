@@ -1,5 +1,7 @@
 # ⚡ DAZE Dashboard
 
+🇬🇧 English | 🇮🇹 [Italiano](README.it.md)
+
 [![release](https://img.shields.io/github/v/release/fabiovit/daze-dashboard?label=release)](https://github.com/fabiovit/daze-dashboard/releases)
 [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=fabiovit&repository=daze-dashboard&category=integration)
 [![Validate](https://github.com/fabiovit/daze-dashboard/actions/workflows/validate.yml/badge.svg)](https://github.com/fabiovit/daze-dashboard/actions/workflows/validate.yml)
@@ -8,7 +10,7 @@
 
 A modern Home Assistant sidebar dashboard for DAZE EV chargers.
 
-> **Stable release:** v2.1.0
+> **Stable release:** v2.2.0
 
 DAZE Dashboard is an **independent companion project** for
 [`ha-daze`](https://github.com/rdndnl/ha-daze).

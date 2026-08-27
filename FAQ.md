@@ -1,5 +1,7 @@
 # DAZE Dashboard FAQ
 
+🇬🇧 English | 🇮🇹 [Italiano](FAQ.it.md)
+
 ## Does DAZE Dashboard replace ha-daze?
 
 No. DAZE Dashboard is a presentation layer and requires `ha-daze` for DAZE wallbox
