@@ -101,6 +101,10 @@ class DazeDashboardPanel extends HTMLElement {
     return value;
   }
 
+  _hasValue(key) {
+    return this._state(key, null) !== null;
+  }
+
   _number(key, decimals = 1, suffix = "") {
     const raw = this._state(key, null);
     if (raw === null) return "—";
@@ -216,6 +220,31 @@ class DazeDashboardPanel extends HTMLElement {
     if (tone === "connected") return "#3b82f6";
     if (tone === "offline") return "#ef4444";
     return "#64748b";
+  }
+
+  _chargingPulseClass() {
+    return this._isCharging() ? "is-charging" : "";
+  }
+
+  _statusIcon() {
+    const tone = this._statusTone();
+    if (tone === "charging") return "mdi:ev-station";
+    if (tone === "connected") return "mdi:ev-plug-type2";
+    if (tone === "offline") return "mdi:alert-circle-outline";
+    return "mdi:power-plug-outline";
+  }
+
+  _statusLabel() {
+    const tone = this._statusTone();
+    if (tone === "charging") return "Ricarica attiva";
+    if (tone === "connected") return "Auto collegata";
+    if (tone === "offline") return "Non disponibile";
+    return "In attesa";
+  }
+
+  _heroProgress() {
+    const pct = this._powerPercent();
+    return Number.isFinite(pct) ? Math.max(0, Math.min(100, pct)) : 0;
   }
 
   _errorInfo() {
@@ -562,11 +591,43 @@ class DazeDashboardPanel extends HTMLElement {
           Diagnostica intelligente
         </div>
         <div class="diag-list">
-          ${this._diagRow("mdi:thermometer", "Temperatura case", this._number("case_temperature", 1, " °C"), caseState.label, caseState.tone, caseState.pct)}
-          ${this._diagRow("mdi:thermometer-lines", "Temperatura scheda", this._number("board_temperature", 1, " °C"), boardState.label, boardState.tone, boardState.pct)}
-          ${this._diagRow("mdi:fan", "Ventola", this._humanStatus(this._state("fan_status")), this._state("fan_status", null) === null ? "N/D" : "Disponibile", this._state("fan_status", null) === null ? "neutral" : "ok")}
-          ${this._diagRow("mdi:wifi", "Wi-Fi", this._wifiText(), this._state("wifi_ssid", null) === null ? "N/D" : "OK", this._state("wifi_ssid", null) === null ? "neutral" : "ok")}
-          ${this._diagRow("mdi:alert-circle-outline", "Sistema", error.text, error.tone === "ok" ? "OK" : error.tone === "bad" ? "Attenzione" : "N/D", error.tone)}
+          ${this._hasValue("case_temperature") ? this._diagRow(
+            "mdi:thermometer",
+            "Temperatura case",
+            this._number("case_temperature", 1, " °C"),
+            caseState.label,
+            caseState.tone,
+            caseState.pct
+          ) : ""}
+          ${this._hasValue("board_temperature") ? this._diagRow(
+            "mdi:thermometer-lines",
+            "Temperatura scheda",
+            this._number("board_temperature", 1, " °C"),
+            boardState.label,
+            boardState.tone,
+            boardState.pct
+          ) : ""}
+          ${this._hasValue("fan_status") ? this._diagRow(
+            "mdi:fan",
+            "Ventola",
+            this._humanStatus(this._state("fan_status")),
+            "Disponibile",
+            "ok"
+          ) : ""}
+          ${this._hasValue("wifi_ssid") ? this._diagRow(
+            "mdi:wifi",
+            "Wi-Fi",
+            this._wifiText(),
+            "OK",
+            "ok"
+          ) : ""}
+          ${this._hasValue("system_error") ? this._diagRow(
+            "mdi:alert-circle-outline",
+            "Sistema",
+            error.text,
+            error.tone === "ok" ? "OK" : error.tone === "bad" ? "Attenzione" : "",
+            error.tone
+          ) : ""}
         </div>
       </section>
     `;
@@ -582,9 +643,9 @@ class DazeDashboardPanel extends HTMLElement {
           Informazioni DAZE
         </div>
         <div class="metrics">
-          ${this._metric("mdi:cash", "Tariffa energetica", this._tariff())}
-          ${this._metric("mdi:chip", "Firmware", this._state("firmware_version"))}
-          ${this._metric("mdi:application-cog-outline", "Software", this._state("software_version"))}
+          ${this._hasValue("tariff") ? this._metric("mdi:cash", "Tariffa energetica", this._tariff()) : ""}
+          ${this._hasValue("firmware_version") ? this._metric("mdi:chip", "Firmware", this._state("firmware_version")) : ""}
+          ${this._hasValue("software_version") ? this._metric("mdi:application-cog-outline", "Software", this._state("software_version")) : ""}
           ${this._metric("mdi:shield-check-outline", "Integrazione", "ha-daze")}
         </div>
       </section>
@@ -673,12 +734,47 @@ class DazeDashboardPanel extends HTMLElement {
         .diag-track{height:5px;margin-top:9px;border-radius:999px;background:var(--card-background-color);overflow:hidden}.diag-fill{height:100%;border-radius:999px;background:#64748b}.diag-fill.ok{background:#22c55e}.diag-fill.warn{background:#f59e0b}.diag-fill.bad{background:#ef4444}
         .project-line{display:flex;justify-content:space-between;gap:18px;padding:11px 0;border-bottom:1px solid var(--divider-color)}.project-note{margin-top:14px;font-size:12px;opacity:.58;line-height:1.5}
         .notice{margin-top:18px;border-radius:18px;padding:16px 18px;background:var(--secondary-background-color);opacity:.8}.footer{display:flex;justify-content:center;gap:8px;font-size:12px;opacity:.5;margin:18px 0 6px}
-        @media(max-width:1020px){
+        
+        /* v2.1 dynamic visual refresh */
+        .hero{position:relative;overflow:hidden;isolation:isolate}
+        .hero-ambient{position:absolute;inset:-35% -10% auto auto;width:420px;height:420px;border-radius:50%;filter:blur(38px);opacity:.16;z-index:-1;background:radial-gradient(circle at 50% 50%,var(--primary-color),transparent 68%);pointer-events:none}
+        .hero.is-charging .hero-ambient{opacity:.28;animation:ambientPulse 2.8s ease-in-out infinite}
+        .eyebrow-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+        .status-pill{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;font-size:11px;font-weight:850;letter-spacing:.01em;border:1px solid rgba(128,128,128,.18);background:rgba(127,127,127,.08)}
+        .status-pill ha-icon{--mdc-icon-size:17px}
+        .status-pill.charging{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.28)}
+        .status-pill.connected{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.28)}
+        .status-pill.offline{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.28)}
+        .hero-title{margin-top:18px;font-size:clamp(30px,4vw,50px);font-weight:950;letter-spacing:-.055em;line-height:.98}
+        .hero-subtitle{margin-top:10px;font-size:13px;opacity:.58;font-weight:650}
+        .hero-kpi-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:22px}
+        .hero-kpi{min-width:0;padding:13px 14px;border-radius:18px;border:1px solid rgba(127,127,127,.12);background:rgba(127,127,127,.055);backdrop-filter:blur(12px)}
+        .hero-kpi-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;opacity:.46;font-weight:850}
+        .hero-kpi-value{margin-top:6px;font-size:24px;font-weight:950;letter-spacing:-.035em;white-space:nowrap}
+        .hero-kpi-value.compact{font-size:19px}
+        .power-block{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:280px}
+        .power-ring{--progress:0;position:relative;width:min(250px,65vw);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--primary-color) calc(var(--progress) * 1%),rgba(127,127,127,.12) 0);box-shadow:0 24px 70px rgba(0,0,0,.13),inset 0 0 0 1px rgba(255,255,255,.05)}
+        .power-ring::after{content:"";position:absolute;inset:10px;border-radius:50%;background:var(--card-background-color);box-shadow:inset 0 0 0 1px rgba(127,127,127,.1)}
+        .hero.is-charging .power-ring{box-shadow:0 0 0 1px rgba(245,158,11,.12),0 24px 80px rgba(245,158,11,.15);animation:ringPulse 2.6s ease-in-out infinite}
+        .power-ring-inner{position:relative;z-index:1;text-align:center;padding:25px}
+        .power-label{font-size:11px;text-transform:uppercase;letter-spacing:.09em;opacity:.48;font-weight:850}
+        .power-number{margin-top:5px;font-size:clamp(38px,5vw,58px);font-weight:950;letter-spacing:-.06em;line-height:.95}
+        .power-caption{margin-top:8px;font-size:11px;opacity:.52;font-weight:750}
+        .power-track{width:min(250px,65vw);height:5px;border-radius:999px;overflow:hidden;background:rgba(127,127,127,.12);margin-top:17px}
+        .power-track-fill{height:100%;border-radius:inherit;background:var(--primary-color);transition:width .45s ease}
+        .power-track-labels{width:min(250px,65vw);display:flex;justify-content:space-between;margin-top:7px;font-size:9px;opacity:.42;font-weight:750}
+        .feature-card,.metric,.diag-row,.chart-card,.section{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease}
+        @media(hover:hover){.feature-card:hover,.metric:hover,.diag-row:hover{transform:translateY(-2px)}}
+        .diag-fill,.power-track-fill{transition:width .5s cubic-bezier(.2,.8,.2,1)}
+        @keyframes ambientPulse{0%,100%{transform:scale(.96);opacity:.18}50%{transform:scale(1.06);opacity:.34}}
+        @keyframes ringPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.012)}}
+        @media(prefers-reduced-motion:reduce){.hero.is-charging .hero-ambient,.hero.is-charging .power-ring{animation:none!important}.feature-card,.metric,.diag-row,.chart-card,.section,.diag-fill,.power-track-fill{transition:none!important}}
+@media(max-width:1020px){
           .session-grid{grid-template-columns:repeat(2,1fr)}
           .metrics{grid-template-columns:repeat(2,1fr)}
         }
         @media(max-width:760px){
-          .hero-grid{grid-template-columns:1fr}
+          .hero-grid{grid-template-columns:1fr}.hero-kpi-row{grid-template-columns:repeat(3,minmax(0,1fr))}.power-block{margin-top:4px}
           .power-block{text-align:left;min-width:0}
           .power-row{justify-content:flex-start}
           .session-strip{justify-content:flex-start}
@@ -701,7 +797,7 @@ class DazeDashboardPanel extends HTMLElement {
           .page{padding:12px 10px 0}
           .hero{padding:22px;border-radius:24px}
           .section{padding:15px}
-          .session-grid,.overview-grid,.metrics{grid-template-columns:1fr}
+          .session-grid,.overview-grid,.metrics{grid-template-columns:1fr}.hero-kpi-row{grid-template-columns:1fr 1fr}.hero-kpi:last-child{grid-column:1/-1}.power-ring{width:min(220px,72vw)}.power-track,.power-track-labels{width:min(220px,72vw)}
           .chart-svg{height:180px}
           .footer{padding:0 10px}
         }
@@ -734,25 +830,46 @@ class DazeDashboardPanel extends HTMLElement {
         </header>
 
         <main class="page">
-<section class="hero ${tone}">
-          <div class="hero-grid">
-            <div>
-              <div class="kicker">HOME ASSISTANT · DAZE WALLBOX</div>
-              <h1>DAZE</h1>
-              <div class="status-pill"><span class="dot"></span>${heroLabel}</div>
-              <div class="hero-status">${status}</div>
+<section class="hero ${this._chargingPulseClass()}">
+        <div class="hero-ambient"></div>
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <div class="eyebrow-row">
+              <span class="status-pill ${this._statusTone()}">
+                <ha-icon icon="${this._statusIcon()}"></ha-icon>
+                ${this._statusLabel()}
+              </span>
             </div>
-            <div class="power-block">
-              <div class="power-row"><div class="power">${this._power()}</div><div class="power-unit">kW</div></div>
-              <div class="power-sub">${charging ? "Potenza di ricarica" : "Potenza wallbox"}</div>
-              <div class="power-track"><div class="power-fill"></div></div>
-              <div class="session-strip">
-                <div class="session-item"><div class="session-label">Energia</div><div class="session-value">${this._number("session_energy", 2, " kWh")}</div></div>
-                <div class="session-item"><div class="session-label">Tempo live</div><div class="session-value">${charging ? this._elapsed() : "—"}</div></div>
+            <div class="hero-title">Energia in tempo reale</div>
+            <div class="hero-subtitle">Wallbox DAZE · aggiornamento live da Home Assistant</div>
+            <div class="hero-kpi-row">
+              <div class="hero-kpi">
+                <div class="hero-kpi-label">Energia sessione</div>
+                <div class="hero-kpi-value">${this._sessionEnergyHtml()}</div>
+              </div>
+              <div class="hero-kpi">
+                <div class="hero-kpi-label">Durata</div>
+                <div class="hero-kpi-value compact">${this._elapsed()}</div>
+              </div>
+              <div class="hero-kpi">
+                <div class="hero-kpi-label">Costo stimato</div>
+                <div class="hero-kpi-value compact">${this._estimatedCost()}</div>
               </div>
             </div>
           </div>
-        </section>
+          <div class="power-block">
+            <div class="power-ring" style="--progress:${this._heroProgress()}">
+              <div class="power-ring-inner">
+                <div class="power-label">Potenza</div>
+                <div class="power-number">${this._chargingPowerHtml()}</div>
+                <div class="power-caption">${this._number("charging_current_l1", 1, " A")} · ${this._number("voltage_l1", 0, " V")}</div>
+              </div>
+            </div>
+            <div class="power-track"><div class="power-track-fill" style="width:${this._heroProgress()}%"></div></div>
+            <div class="power-track-labels"><span>0%</span><span>${Math.round(this._heroProgress())}% del limite</span><span>100%</span></div>
+          </div>
+        </div>
+      </section>
 ${this._data.available ? (
           this._activeView === "diagnostics"
             ? this._renderDiagnostics()

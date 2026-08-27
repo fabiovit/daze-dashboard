@@ -8,7 +8,7 @@
 
 A modern Home Assistant sidebar dashboard for DAZE EV chargers.
 
-> **Stable release:** v2.0.0
+> **Stable release:** v2.1.0
 
 DAZE Dashboard is an **independent companion project** for
 [`ha-daze`](https://github.com/rdndnl/ha-daze).
@@ -17,6 +17,26 @@ DAZE Dashboard is an **independent companion project** for
 entities in Home Assistant. DAZE Dashboard reads those existing entities and adds a
 dedicated presentation layer. It does not replace, modify, or add polling to
 `ha-daze` or the DAZE cloud.
+
+## 🖼️ Screenshots
+
+### Overview
+
+| Dark | Light |
+| --- | --- |
+| ![DAZE Dashboard overview dark](screenshots/overview-dark.png) | ![DAZE Dashboard overview light](screenshots/overview-light.png) |
+
+### Diagnostics
+
+| Dark | Light |
+| --- | --- |
+| ![DAZE Dashboard diagnostics dark](screenshots/diagnostics-dark.png) | ![DAZE Dashboard diagnostics light](screenshots/diagnostics-light.png) |
+
+### Information
+
+| Dark | Light |
+| --- | --- |
+| ![DAZE Dashboard information dark](screenshots/information-dark.png) | ![DAZE Dashboard information light](screenshots/information-light.png) |
 
 ## Requirements
 
@@ -143,6 +163,12 @@ For communication with the wallbox or entities supplied by the underlying
 integration:
 
 https://github.com/rdndnl/ha-daze/issues
+
+## ☕ Support DAZE Dashboard
+
+If you enjoy DAZE Dashboard and want to support its development, you can buy me a coffee on Ko-fi:
+
+**https://ko-fi.com/fabvittori**
 
 ## License
 

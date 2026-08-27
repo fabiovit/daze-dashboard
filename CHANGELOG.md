@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.1.0 — Dynamic visual refresh
+
+- Redesigned the main charging hero with a live circular power indicator.
+- Added charging-state visual feedback and subtle pulse effects.
+- Added status pill, live session energy, duration and estimated cost to the hero.
+- Added animated power-limit progress.
+- Improved depth, spacing and hover feedback across cards.
+- Added smoother value transitions and reduced-motion support.
+- Refined mobile layout while preserving the mobile-only Home Assistant menu.
+- Added official dark/light screenshots to the repository.
+- Added Ko-fi support information to the README.
+- Backend, privacy-safe discovery and ha-daze compatibility remain unchanged.
+
 ## 2.0.0 — Stable codebase refresh
 
 DAZE Dashboard 2.0 consolidates the stable 1.x work into a cleaner baseline.
