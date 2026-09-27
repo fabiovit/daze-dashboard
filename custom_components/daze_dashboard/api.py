@@ -106,6 +106,48 @@ async def websocket_subscribe(
     send_update()
 
 
+
+ACTION_TO_ENTITY_KEY = {
+    "start": "start_charge",
+    "resume": "resume_charge",
+    "stop": "stop_charge",
+}
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "daze_dashboard/action",
+        vol.Required("action"): vol.In(ACTION_TO_ENTITY_KEY),
+    }
+)
+@websocket_api.async_response
+async def websocket_action(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Execute a privacy-safe charging command through a discovered ha-daze button."""
+    entity_map = discover_daze_entities(hass)
+    entity_id = entity_map.entities.get(ACTION_TO_ENTITY_KEY[msg["action"]])
+
+    if entity_id is None:
+        connection.send_error(
+            msg["id"],
+            "entity_not_found",
+            "The requested ha-daze charging command is not available.",
+        )
+        return
+
+    await hass.services.async_call(
+        "button",
+        "press",
+        {"entity_id": entity_id},
+        blocking=True,
+    )
+    connection.send_result(msg["id"], {"success": True})
+
+
 def async_register_websocket_api(hass: HomeAssistant) -> None:
     """Register DAZE Dashboard WebSocket commands."""
     websocket_api.async_register_command(hass, websocket_subscribe)
+    websocket_api.async_register_command(hass, websocket_action)

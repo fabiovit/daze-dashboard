@@ -25,6 +25,15 @@ SOCKET_KEYS = (
     "evse_state",
     "system_error",
     "fan_status",
+    "available_charge_command",
+    "session_id",
+    "session_start",
+    "session_duration",
+    "session_user",
+    "start_charge",
+    "resume_charge",
+    "stop_charge",
+    "charging",
 )
 
 EVSE_KEYS = (

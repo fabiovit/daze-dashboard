@@ -135,7 +135,30 @@ class DazeDashboardPanel extends HTMLElement {
       "Supporta DAZE Dashboard": "Support DAZE Dashboard",
       "Offrimi un caffè": "Buy me a coffee",
       "Se DAZE Dashboard ti piace e vuoi supportarne lo sviluppo, puoi offrirmi un caffè su Ko-fi.": "If you enjoy DAZE Dashboard and want to support its development, you can buy me a coffee on Ko-fi.",
-      "Modifica queste preferenze da Impostazioni → Dispositivi e servizi → DAZE Dashboard → Configura. Nessun YAML richiesto.": "Change these preferences from Settings → Devices & services → DAZE Dashboard → Configure. No YAML required."
+      "Modifica queste preferenze da Impostazioni → Dispositivi e servizi → DAZE Dashboard → Configura. Nessun YAML richiesto.": "Change these preferences from Settings → Devices & services → DAZE Dashboard → Configure. No YAML required.",
+      "Controllo ricarica": "Charging control",
+      "Avvia ricarica": "Start charging",
+      "Riprendi ricarica": "Resume charging",
+      "Ferma ricarica": "Stop charging",
+      "Comando inviato": "Command sent",
+      "Comando non disponibile": "Command unavailable",
+      "Invio…": "Sending…",
+      "Durata sessione": "Session duration",
+      "Inizio sessione": "Session start",
+      "Comando disponibile": "Available command",
+      "ID sessione": "Session ID",
+      "Utente sessione": "Session user",
+      "Sessione attiva": "Active session",
+      "Sessione corrente / ultima lettura": "Current session / latest reading",
+      "Dato nativo ha-daze": "Native ha-daze data",
+      "Tempo live": "Live time",
+      "Media live": "Live average",
+      "Media campioni del pannello": "Average of panel samples",
+      "Potenza live": "Live power",
+      "Elettrico": "Electrical",
+      "Stato EVSE": "EVSE status",
+      "Stato operativo della presa": "Socket operating state",
+      "Ultimi 5 minuti · campione ogni 5 s": "Last 5 minutes · sample every 5 s"
     };
     return this._resolvedLanguage() === "it" ? text : (translations[text] || text);
   }
@@ -410,6 +433,88 @@ class DazeDashboardPanel extends HTMLElement {
       : `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   }
 
+  _hasEntity(key) {
+    return Boolean(this._item(key));
+  }
+
+  _sessionDuration() {
+    const raw = this._state("session_duration", null);
+    if (raw !== null) {
+      const minutes = Number(raw);
+      if (Number.isFinite(minutes)) {
+        const totalSeconds = Math.max(0, Math.round(minutes * 60));
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const sec = totalSeconds % 60;
+        return h > 0
+          ? `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`
+          : `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+      }
+    }
+    return this._elapsed();
+  }
+
+  _sessionStart() {
+    const raw = this._state("session_start", null);
+    if (raw === null) return "—";
+    const date = new Date(raw);
+    if (Number.isNaN(date.getTime())) return String(raw);
+    return new Intl.DateTimeFormat(this._locale(), {
+      dateStyle: "short",
+      timeStyle: "medium",
+    }).format(date);
+  }
+
+  _chargeCommand() {
+    return String(this._state("available_charge_command", "")).toLowerCase();
+  }
+
+  _controlAction() {
+    const command = this._chargeCommand();
+    if (command === "stop") return { action: "stop", label: this._tr("Ferma ricarica"), icon: "mdi:stop-circle-outline", tone: "stop" };
+    if (command === "play") return { action: "resume", label: this._tr("Riprendi ricarica"), icon: "mdi:play-circle-outline", tone: "start" };
+    if (this._hasEntity("start_charge")) return { action: "start", label: this._tr("Avvia ricarica"), icon: "mdi:ev-station", tone: "start" };
+    return null;
+  }
+
+  async _runChargeAction(action) {
+    if (!this._hass || this._actionPending) return;
+    this._actionPending = true;
+    this._render();
+    try {
+      await this._hass.callWS({ type: "daze_dashboard/action", action });
+      this._actionMessage = this._tr("Comando inviato");
+    } catch (err) {
+      console.error("DAZE Dashboard charge action failed", err);
+      this._actionMessage = this._tr("Comando non disponibile");
+    } finally {
+      this._actionPending = false;
+      this._render();
+      setTimeout(() => {
+        this._actionMessage = "";
+        this._render();
+      }, 2500);
+    }
+  }
+
+  _renderChargeControl() {
+    const control = this._controlAction();
+    if (!control) return "";
+    return `
+      <section class="charge-control">
+        <div class="charge-control-copy">
+          <div class="feature-label">${this._tr("Controllo ricarica")}</div>
+          <div class="charge-control-state">${this._humanStatus(this._state("evse_state"))}</div>
+          ${this._actionMessage ? `<div class="charge-control-message">${this._actionMessage}</div>` : ""}
+        </div>
+        <button class="charge-action ${control.tone}" type="button" data-charge-action="${control.action}" ${this._actionPending ? "disabled" : ""}>
+          <ha-icon icon="${this._actionPending ? "mdi:loading" : control.icon}" class="${this._actionPending ? "spin" : ""}"></ha-icon>
+          <span>${this._actionPending ? this._tr("Invio…") : control.label}</span>
+        </button>
+      </section>
+    `;
+  }
+
   _tempStatus(key, warn, critical) {
     const n = Number(this._state(key, "NaN"));
     if (!Number.isFinite(n)) return { label: this._tr("Non disponibile"), tone: "neutral", pct: 0 };
@@ -489,6 +594,10 @@ class DazeDashboardPanel extends HTMLElement {
       button.addEventListener("click", () => this._setLanguage(button.dataset.language));
     });
 
+    this.shadowRoot.querySelectorAll("[data-charge-action]").forEach((button) => {
+      button.addEventListener("click", () => this._runChargeAction(button.dataset.chargeAction));
+    });
+
     this.shadowRoot.querySelectorAll(".nav .nav-button[data-view]").forEach((button) => {
       let touchStartX = 0;
       let touchStartY = 0;
@@ -538,7 +647,7 @@ class DazeDashboardPanel extends HTMLElement {
     const pad = 18;
 
     if (!samples.length) {
-      return `<div class="chart-empty">Il grafico live inizierà appena saranno disponibili campioni di potenza.</div>`;
+      return `<div class="chart-empty">${this._tr("Potenza live")}…</div>`;
     }
 
     const maxKw = Math.max(1, ...samples.map((s) => s.kw)) * 1.12;
@@ -569,7 +678,7 @@ class DazeDashboardPanel extends HTMLElement {
         <circle cx="${width-pad}" cy="${lastY}" r="5" class="chart-dot"></circle>
       </svg>
       <div class="chart-legend">
-        <span>Ultimi 5 minuti · campione ogni 5 s</span>
+        <span>${this._tr("Ultimi 5 minuti · campione ogni 5 s")}</span>
         <strong>${last.kw.toLocaleString(this._locale(), {minimumFractionDigits:2, maximumFractionDigits:2})} kW</strong>
       </div>
     `;
@@ -579,22 +688,24 @@ class DazeDashboardPanel extends HTMLElement {
     const opts = this._options();
 
     return `
+      ${this._renderChargeControl()}
+
       ${opts.show_session_stats ? `
         <section class="session-grid">
           <div class="session-card primary-stat">
             <div class="feature-label">${this._tr("Energia sessione")}</div>
             <div class="feature-value">${this._sessionEnergyHtml()}</div>
-            <div class="feature-caption">${charging ? "Sessione attiva" : "Sessione corrente / ultima lettura"}</div>
+            <div class="feature-caption">${charging ? this._tr("Sessione attiva") : this._tr("Sessione corrente / ultima lettura")}</div>
           </div>
           <div class="session-card">
-            <div class="feature-label">Tempo live</div>
-            <div class="feature-value medium">${charging ? this._elapsed() : "—"}</div>
-            <div class="feature-caption">Da quando il pannello rileva la carica</div>
+            <div class="feature-label">${this._tr("Durata sessione")}</div>
+            <div class="feature-value medium">${this._hasValue("session_duration") ? this._sessionDuration() : (charging ? this._elapsed() : "—")}</div>
+            <div class="feature-caption">${this._hasValue("session_duration") ? this._tr("Dato nativo ha-daze") : this._tr("Tempo live")}</div>
           </div>
           <div class="session-card">
-            <div class="feature-label">Media live</div>
+            <div class="feature-label">${this._tr("Media live")}</div>
             <div class="feature-value medium">${this._liveAveragePower()}</div>
-            <div class="feature-caption">Media campioni del pannello</div>
+            <div class="feature-caption">${this._tr("Media campioni del pannello")}</div>
           </div>
           <div class="session-card">
             <div class="feature-label">${this._tr("Costo stimato")}</div>
@@ -608,7 +719,7 @@ class DazeDashboardPanel extends HTMLElement {
         <section class="section chart-section">
           <div class="section-title">
             <ha-icon icon="mdi:chart-line"></ha-icon>
-            Potenza live
+            ${this._tr("Potenza live")}
           </div>
           ${this._chartSvg()}
         </section>
@@ -618,7 +729,7 @@ class DazeDashboardPanel extends HTMLElement {
         <div class="feature-card">
           <div class="feature-label">Stato EVSE</div>
           <div class="feature-value small">${evse}</div>
-          <div class="feature-caption">Stato operativo della presa</div>
+          <div class="feature-caption">${this._tr("Stato operativo della presa")}</div>
         </div>
         <div class="feature-card">
           <div class="feature-label">Potenza ricarica</div>
@@ -640,7 +751,7 @@ class DazeDashboardPanel extends HTMLElement {
       <section class="section">
         <div class="section-title">
           <ha-icon icon="mdi:flash-outline"></ha-icon>
-          Elettrico
+          ${this._tr("Elettrico")}
         </div>
         <div class="metrics">
           ${this._metricDetail(
@@ -715,6 +826,41 @@ class DazeDashboardPanel extends HTMLElement {
             error.text,
             error.tone === "ok" ? "OK" : error.tone === "bad" ? "Attenzione" : "",
             error.tone
+          ) : ""}
+          ${this._hasValue("available_charge_command") ? this._diagRow(
+            "mdi:gesture-tap-button",
+            this._tr("Comando disponibile"),
+            this._state("available_charge_command"),
+            "OK",
+            "ok"
+          ) : ""}
+          ${this._hasValue("session_start") ? this._diagRow(
+            "mdi:clock-start",
+            this._tr("Inizio sessione"),
+            this._sessionStart(),
+            "",
+            "neutral"
+          ) : ""}
+          ${this._hasValue("session_duration") ? this._diagRow(
+            "mdi:timer-outline",
+            this._tr("Durata sessione"),
+            this._sessionDuration(),
+            "",
+            "neutral"
+          ) : ""}
+          ${this._hasValue("session_id") ? this._diagRow(
+            "mdi:identifier",
+            this._tr("ID sessione"),
+            this._state("session_id"),
+            "",
+            "neutral"
+          ) : ""}
+          ${this._hasValue("session_user") ? this._diagRow(
+            "mdi:account-outline",
+            this._tr("Utente sessione"),
+            this._state("session_user"),
+            "",
+            "neutral"
           ) : ""}
         </div>
       </section>
@@ -833,6 +979,10 @@ class DazeDashboardPanel extends HTMLElement {
         .project-line{display:flex;justify-content:space-between;gap:18px;padding:11px 0;border-bottom:1px solid var(--divider-color)}.project-note{margin-top:14px;font-size:12px;opacity:.58;line-height:1.5}
         .notice{margin-top:18px;border-radius:18px;padding:16px 18px;background:var(--secondary-background-color);opacity:.8}.footer a{color:inherit;text-decoration:none;font-weight:800}.footer a:hover{text-decoration:underline}.footer{display:flex;justify-content:center;gap:8px;font-size:12px;opacity:.5;margin:18px 0 6px}
 
+        .charge-control{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:18px;padding:18px 20px;border:1px solid var(--divider-color);border-radius:22px;background:var(--card-background-color)}
+        .charge-control-copy{min-width:0}.charge-control-state{margin-top:5px;font-size:18px;font-weight:900}.charge-control-message{margin-top:5px;font-size:11px;color:var(--secondary-text-color)}
+        .charge-action{border:0;border-radius:15px;padding:12px 16px;display:inline-flex;align-items:center;gap:9px;font:inherit;font-size:13px;font-weight:900;cursor:pointer;color:white;background:var(--primary-color);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+        .charge-action.stop{background:#ef4444}.charge-action:disabled{opacity:.6;cursor:wait}.charge-action ha-icon{--mdc-icon-size:20px}.spin{animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
         .support-card{overflow:hidden}
         .support-link{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:10px 13px;border-radius:12px;text-decoration:none;color:var(--primary-text-color);font-size:12px;font-weight:850;background:rgba(127,127,127,.09);border:1px solid rgba(127,127,127,.14)}
         .support-link ha-icon{--mdc-icon-size:18px}
@@ -901,6 +1051,7 @@ class DazeDashboardPanel extends HTMLElement {
           .page{padding:12px 10px 0}
           .hero{padding:22px;border-radius:24px}
           .section{padding:15px}
+          .charge-control{align-items:stretch;flex-direction:column;padding:15px}.charge-action{justify-content:center;width:100%}
           .session-grid,.overview-grid,.metrics{grid-template-columns:1fr}.hero-kpi-row{grid-template-columns:1fr 1fr}.hero-kpi:last-child{grid-column:1/-1}.power-ring{width:min(220px,72vw)}.power-track,.power-track-labels{width:min(220px,72vw)}
           .chart-svg{height:180px}
           .footer{padding:0 10px}
@@ -954,7 +1105,7 @@ class DazeDashboardPanel extends HTMLElement {
               </div>
               <div class="hero-kpi">
                 <div class="hero-kpi-label">${this._tr("Durata")}</div>
-                <div class="hero-kpi-value compact">${this._elapsed()}</div>
+                <div class="hero-kpi-value compact">${this._sessionDuration()}</div>
               </div>
               <div class="hero-kpi">
                 <div class="hero-kpi-label">${this._tr("Costo stimato")}</div>

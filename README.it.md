@@ -4,7 +4,7 @@
 
 Una moderna dashboard laterale per Home Assistant dedicata alle wallbox DAZE.
 
-> **Versione stabile:** v2.2.0
+> **Versione stabile:** v2.3.0
 
 DAZE Dashboard è un progetto companion indipendente per [`ha-daze`](https://github.com/rdndnl/ha-daze).
 
@@ -34,6 +34,8 @@ Aggiungi `https://github.com/fabiovit/daze-dashboard` a HACS come **Integration*
 - Pannello laterale dedicato
 - Aggiornamenti live via WebSocket
 - Potenza, energia sessione, corrente, tensione e limite di ricarica
+- Comandi Avvia, Ferma e Riprendi ricarica tramite ha-daze
+- Durata e inizio sessione nativi, ID sessione e utente quando disponibili
 - Diagnostica adattiva che nasconde i dati non disponibili
 - Grafico live e statistiche sessione
 - Tema chiaro/scuro

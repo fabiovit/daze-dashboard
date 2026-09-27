@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.3.0 — Charging controls & native session data
+
+- Added privacy-safe discovery for the new ha-daze charging controls.
+- Added Start, Stop and Resume charging actions directly in the dashboard.
+- Added native ha-daze session duration and session start support.
+- Added session ID, session user and available charging command diagnostics.
+- Native session duration is preferred over the browser timer, with the existing timer retained as fallback.
+- Charging actions are executed by the backend without exposing personal entity IDs to the frontend.
+- Preserved Italian/English localization and responsive layout.
+
 ## 2.2.0 — Italian & English
 
 - Added automatic Italian/English localization.

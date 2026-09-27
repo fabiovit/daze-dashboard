@@ -10,7 +10,7 @@
 
 A modern Home Assistant sidebar dashboard for DAZE EV chargers.
 
-> **Stable release:** v2.2.0
+> **Stable release:** v2.3.0
 
 DAZE Dashboard is an **independent companion project** for
 [`ha-daze`](https://github.com/rdndnl/ha-daze).
@@ -95,6 +95,8 @@ Restart Home Assistant and add **DAZE Dashboard** from **Devices & services**.
 - Automatic privacy-safe `ha-daze` entity discovery
 - Backend WebSocket subscription with live Home Assistant state updates
 - Wallbox and EVSE state
+- Start, stop and resume charging controls powered by ha-daze
+- Native session duration, start time, session ID and session user when available
 - Charging power and session energy
 - Charging/grid current and voltage
 - Charging limit
