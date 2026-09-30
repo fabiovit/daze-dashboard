@@ -13,17 +13,23 @@ La dashboard supporta **Auto**, 🇮🇹 Italiano e 🇬🇧 English. In Auto se
 
 ## 🖼️ Screenshot
 
-| Panoramica scura | Panoramica chiara |
-| --- | --- |
-| ![Panoramica scura](screenshots/overview-dark.png) | ![Panoramica chiara](screenshots/overview-light.png) |
+### Panoramica / Overview
 
-| Diagnostica scura | Diagnostica chiara |
+| Italiano | English |
 | --- | --- |
-| ![Diagnostica scura](screenshots/diagnostics-dark.png) | ![Diagnostica chiara](screenshots/diagnostics-light.png) |
+| ![Panoramica in italiano](screenshots/overview-it.png) | ![Overview in English](screenshots/overview-en.png) |
 
-| Informazioni scure | Informazioni chiare |
+### Diagnostica / Diagnostics
+
+| Italiano | English |
 | --- | --- |
-| ![Informazioni scure](screenshots/information-dark.png) | ![Informazioni chiare](screenshots/information-light.png) |
+| ![Diagnostica in italiano](screenshots/diagnostics-it.png) | ![Diagnostics in English](screenshots/diagnostics-en.png) |
+
+### Informazioni / Information
+
+| Italiano | English |
+| --- | --- |
+| ![Informazioni in italiano](screenshots/information-it.png) | ![Information in English](screenshots/information-en.png) |
 
 ## Installazione
 Aggiungi `https://github.com/fabiovit/daze-dashboard` a HACS come **Integration**, installa DAZE Dashboard, riavvia Home Assistant e aggiungi l'integrazione da **Impostazioni → Dispositivi e servizi**.

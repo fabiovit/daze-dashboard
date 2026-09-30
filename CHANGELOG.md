@@ -9,6 +9,7 @@
 - Native session duration is preferred over the browser timer, with the existing timer retained as fallback.
 - Charging actions are executed by the backend without exposing personal entity IDs to the frontend.
 - Preserved Italian/English localization and responsive layout.
+- Updated documentation screenshots with v2.3.0 charging controls and native session data in Italian and English.
 
 ## 2.2.0 — Italian & English
 

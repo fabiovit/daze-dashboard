@@ -22,23 +22,23 @@ dedicated presentation layer. It does not replace, modify, or add polling to
 
 ## 🖼️ Screenshots
 
-### Overview
+### Overview / Panoramica
 
-| Dark | Light |
+| English | Italiano |
 | --- | --- |
-| ![DAZE Dashboard overview dark](screenshots/overview-dark.png) | ![DAZE Dashboard overview light](screenshots/overview-light.png) |
+| ![Overview in English](screenshots/overview-en.png) | ![Panoramica in italiano](screenshots/overview-it.png) |
 
-### Diagnostics
+### Diagnostics / Diagnostica
 
-| Dark | Light |
+| English | Italiano |
 | --- | --- |
-| ![DAZE Dashboard diagnostics dark](screenshots/diagnostics-dark.png) | ![DAZE Dashboard diagnostics light](screenshots/diagnostics-light.png) |
+| ![Diagnostics in English](screenshots/diagnostics-en.png) | ![Diagnostica in italiano](screenshots/diagnostics-it.png) |
 
-### Information
+### Information / Informazioni
 
-| Dark | Light |
+| English | Italiano |
 | --- | --- |
-| ![DAZE Dashboard information dark](screenshots/information-dark.png) | ![DAZE Dashboard information light](screenshots/information-light.png) |
+| ![Information in English](screenshots/information-en.png) | ![Informazioni in italiano](screenshots/information-it.png) |
 
 ## Requirements
 
