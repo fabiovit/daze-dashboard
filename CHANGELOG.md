@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.3.1 — Home Assistant Marketplace compatibility
+
+- Updated installation instructions for the built-in Home Assistant Marketplace (2026.11+).
+- Retained backward compatibility with HACS on older Home Assistant versions.
+- Added the `energy.ev_charging` integration category for Marketplace catalog metadata.
+- Removed the obsolete `render_readme` setting from `hacs.json`.
+- Preserved v2.3.0 charging controls, native session data, privacy-safe discovery, and bilingual interface.
+
 ## 2.3.0 — Charging controls & native session data
 
 - Added privacy-safe discovery for the new ha-daze charging controls.

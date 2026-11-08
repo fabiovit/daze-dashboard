@@ -4,7 +4,7 @@
 
 Una moderna dashboard laterale per Home Assistant dedicata alle wallbox DAZE.
 
-> **Versione stabile:** v2.3.0
+> **Versione stabile:** v2.3.1
 
 DAZE Dashboard è un progetto companion indipendente per [`ha-daze`](https://github.com/rdndnl/ha-daze).
 
@@ -31,8 +31,20 @@ La dashboard supporta **Auto**, 🇮🇹 Italiano e 🇬🇧 English. In Auto se
 | --- | --- |
 | ![Informazioni in italiano](screenshots/information-it.png) | ![Information in English](screenshots/information-en.png) |
 
-## Installazione
-Aggiungi `https://github.com/fabiovit/daze-dashboard` a HACS come **Integration**, installa DAZE Dashboard, riavvia Home Assistant e aggiungi l'integrazione da **Impostazioni → Dispositivi e servizi**.
+## Installazione tramite Home Assistant Marketplace
+
+Con **Home Assistant 2026.11 o successivo**:
+
+1. Apri **Impostazioni → Marketplace**.
+2. Se DAZE Dashboard non è nel catalogo, scegli **Aggiungi da link**.
+3. Inserisci `https://github.com/fabiovit/daze-dashboard` e seleziona **Integrazione** se richiesto.
+4. Installa **DAZE Dashboard** e riavvia Home Assistant se richiesto.
+5. Apri **Impostazioni → Dispositivi e servizi → Aggiungi integrazione** e aggiungi **DAZE Dashboard**.
+6. Apri il pannello **DAZE** nella barra laterale.
+
+**Hai già installato l'app con HACS?** Home Assistant 2026.11 migra automaticamente integrazioni e repository: non serve disinstallare o reinstallare DAZE Dashboard.
+
+**Usi Home Assistant 2026.3–2026.10?** Continua a utilizzare HACS: il repository resta compatibile.
 
 È richiesto [`ha-daze`](https://github.com/rdndnl/ha-daze). Nessun YAML richiesto.
 

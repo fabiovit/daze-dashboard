@@ -3,14 +3,14 @@
 🇬🇧 English | 🇮🇹 [Italiano](README.it.md)
 
 [![release](https://img.shields.io/github/v/release/fabiovit/daze-dashboard?label=release)](https://github.com/fabiovit/daze-dashboard/releases)
-[![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=fabiovit&repository=daze-dashboard&category=integration)
+[![Marketplace](https://img.shields.io/badge/Home%20Assistant-Marketplace-18BCF2.svg)](https://www.home-assistant.io/integrations/marketplace)
 [![Validate](https://github.com/fabiovit/daze-dashboard/actions/workflows/validate.yml/badge.svg)](https://github.com/fabiovit/daze-dashboard/actions/workflows/validate.yml)
 [![Hassfest](https://github.com/fabiovit/daze-dashboard/actions/workflows/hassfest.yml/badge.svg)](https://github.com/fabiovit/daze-dashboard/actions/workflows/hassfest.yml)
 [![license](https://img.shields.io/github/license/fabiovit/daze-dashboard?label=license)](https://github.com/fabiovit/daze-dashboard/blob/main/LICENSE)
 
 A modern Home Assistant sidebar dashboard for DAZE EV chargers.
 
-> **Stable release:** v2.3.0
+> **Stable release:** v2.3.1
 
 DAZE Dashboard is an **independent companion project** for
 [`ha-daze`](https://github.com/rdndnl/ha-daze).
@@ -43,32 +43,25 @@ dedicated presentation layer. It does not replace, modify, or add polling to
 ## Requirements
 
 - Home Assistant 2026.3.0 or newer
-- HACS (recommended)
+- Home Assistant Marketplace (built into Home Assistant 2026.11 and later)
 - [`ha-daze`](https://github.com/rdndnl/ha-daze) installed and configured
 
-## Installation with HACS
+## Installation with Home Assistant Marketplace
 
-[![Open your Home Assistant instance and open this repository inside HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=fabiovit&repository=daze-dashboard&category=integration)
+On **Home Assistant 2026.11 or later**, open **Settings → Marketplace**.
 
-If needed, add this repository manually in **HACS → Custom repositories**:
+1. Select **Add from link** (if DAZE Dashboard is not already in the catalog).
+2. Enter `https://github.com/fabiovit/daze-dashboard` and select the **Integration** type if asked.
+3. Install **DAZE Dashboard**.
+4. If Home Assistant requests a restart, restart it.
+5. Open **Settings → Devices & services → Add integration** and add **DAZE Dashboard**.
+6. Open the new **DAZE** sidebar panel.
 
-```text
-https://github.com/fabiovit/daze-dashboard
-```
+You must also install and configure [`ha-daze`](https://github.com/rdndnl/ha-daze), which supplies the charger entities.
 
-Repository type:
+**Upgrading from HACS?** Home Assistant migrates existing HACS installations and custom repositories automatically when upgrading to 2026.11. There is no need to remove or reinstall DAZE Dashboard.
 
-```text
-Integration
-```
-
-Then:
-
-1. Install **DAZE Dashboard**.
-2. Restart Home Assistant.
-3. Open **Settings → Devices & services → Add integration**.
-4. Add **DAZE Dashboard**.
-5. Open the new **DAZE** item in the Home Assistant sidebar.
+**Using Home Assistant 2026.3–2026.10?** These versions still use HACS. This repository retains its HACS-compatible `hacs.json` and structure.
 
 No YAML configuration is required.
 
